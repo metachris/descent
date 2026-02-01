@@ -198,6 +198,27 @@ export function getDayAtTime(time: number): number {
   return Math.floor(progress * 5) + 1
 }
 
+// Get elapsed in-story time in hours
+// The journey takes ~7 days (168 hours) total
+export function getElapsedHours(time: number): number {
+  // Timeline mapping (animation seconds → story hours):
+  // 0-8s (Edge): 0 hours
+  // 8-14s (Plunge): 0-0.5 hours
+  // 14-46s (Deaths): 0.5-12 hours (first half day)
+  // 46-86s (Long Fall): 12-132 hours (days 1-5.5)
+  // 86-111s (Outer Core): 132-156 hours (day 5.5-6.5)
+  // 111-131s (Inner Core): 156-164 hours (day 6.5-7)
+  // 131-151s (Center): 164-168 hours (final hours)
+
+  if (time <= 8) return 0
+  if (time <= 14) return ((time - 8) / 6) * 0.5
+  if (time <= 46) return 0.5 + ((time - 14) / 32) * 11.5
+  if (time <= 86) return 12 + ((time - 46) / 40) * 120
+  if (time <= 111) return 132 + ((time - 86) / 25) * 24
+  if (time <= 131) return 156 + ((time - 111) / 20) * 8
+  return 164 + ((time - 131) / 20) * 4
+}
+
 export function getTemperatureAtDepth(depth: number): number {
   // Simplified temperature model
   // Surface: 15°C
