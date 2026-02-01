@@ -54,3 +54,44 @@ body {
 .animate-fall {
   animation: fall linear infinite;
 }
+
+/* Floating particle animation (for center) */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(50vh) translateX(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(45vh) translateX(10px);
+  }
+  80% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(40vh) translateX(-10px);
+    opacity: 0;
+  }
+}
+
+.animate-float {
+  animation: float ease-in-out infinite;
+}
+
+/* Fade in animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out forwards;
+}

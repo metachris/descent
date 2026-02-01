@@ -10,6 +10,11 @@ export default function HUD() {
   const layer = useMemo(() => getLayerAtDepth(depth), [depth])
   const elapsedHours = useMemo(() => getElapsedHours(currentTime), [currentTime])
 
+  // Use dark text on bright backgrounds (Inner Core onwards)
+  const isHotPhase = currentTime > 111
+  const textClass = isHotPhase ? 'text-stone-900' : 'text-white'
+  const labelClass = isHotPhase ? 'text-stone-700' : 'text-white/40'
+
   // Format depth - whole numbers only to prevent flickering
   const formatDepth = (km: number) => {
     if (km < 1) return `${Math.round(km * 1000)} m`
@@ -31,29 +36,38 @@ export default function HUD() {
 
   return (
     <div className="absolute top-0 left-0 right-0 p-6 pointer-events-none">
-      <div className="flex justify-center items-start gap-12">
+      <div
+        className="flex justify-center items-start gap-8 md:gap-12"
+        style={{
+          textShadow: isHotPhase
+            ? '0 1px 8px rgba(255,255,255,0.5)'
+            : '0 2px 10px rgba(0,0,0,0.5)',
+        }}
+      >
         {/* Elapsed Time */}
         <div className="text-center">
-          <div className="text-white/40 text-xs uppercase tracking-widest mb-1">Elapsed</div>
-          <div className="text-2xl md:text-3xl font-mono tabular-nums min-w-[100px]">
+          <div className={`text-xs uppercase tracking-widest mb-1 ${labelClass}`}>Elapsed</div>
+          <div className={`text-2xl md:text-3xl font-mono tabular-nums min-w-[100px] ${textClass}`}>
             {formatElapsedTime(elapsedHours)}
           </div>
         </div>
 
         {/* Depth */}
         <div className="text-center">
-          <div className="text-white/40 text-xs uppercase tracking-widest mb-1">Depth</div>
-          <div className="text-2xl md:text-3xl font-mono tabular-nums min-w-[140px]">
+          <div className={`text-xs uppercase tracking-widest mb-1 ${labelClass}`}>Depth</div>
+          <div className={`text-2xl md:text-3xl font-mono tabular-nums min-w-[140px] ${textClass}`}>
             {formatDepth(depth)}
           </div>
         </div>
 
         {/* Layer */}
         <div className="text-center">
-          <div className="text-white/40 text-xs uppercase tracking-widest mb-1">Layer</div>
+          <div className={`text-xs uppercase tracking-widest mb-1 ${labelClass}`}>Layer</div>
           <div
-            className="text-lg md:text-xl min-w-[120px] transition-colors duration-500"
-            style={{ color: layer?.color || '#fff' }}
+            className="text-xl md:text-2xl min-w-[120px] transition-colors duration-500 font-medium"
+            style={{
+              color: isHotPhase ? '#1c1917' : (layer?.color || '#fff'),
+            }}
           >
             {layer?.name || 'Surface'}
           </div>

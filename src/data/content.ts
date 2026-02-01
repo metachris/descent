@@ -139,16 +139,17 @@ export const NARRATIVE: NarrativeEntry[] = [
   { text: 'The pressure is so immense', startTime: 111, endTime: 114, style: 'normal' },
   { text: 'that iron becomes solid again.', startTime: 114, endTime: 117, style: 'normal' },
   { text: 'A sphere of crystalline iron,', startTime: 118, endTime: 121, style: 'normal' },
-  { text: 'larger than the moon.', startTime: 121, endTime: 124, style: 'whisper' },
-  { text: '6,700°C', startTime: 125, endTime: 127, style: 'data' },
-  { text: 'You\'re almost there.', startTime: 128, endTime: 131, style: 'whisper' },
+  { text: 'larger than the moon.', startTime: 121, endTime: 123, style: 'whisper' },
+  { text: '6,700°C', startTime: 123, endTime: 125, style: 'data' },
+  { text: 'You\'re slowing down.', startTime: 126, endTime: 129, style: 'normal' },
+  { text: 'Less mass below you now. Less pull.', startTime: 129, endTime: 133, style: 'whisper' },
 
   // The Center
-  { text: 'Gravity pulls equally in all directions.', startTime: 131, endTime: 135, style: 'normal' },
-  { text: 'Weightless.', startTime: 136, endTime: 139, style: 'dramatic' },
-  { text: 'Your dust floats suspended', startTime: 140, endTime: 143, style: 'normal' },
-  { text: 'in the iron heart of the world.', startTime: 143, endTime: 147, style: 'whisper' },
-  { text: 'You have fallen through an entire planet.', startTime: 148, endTime: 151, style: 'normal' },
+  { text: 'You\'re almost there.', startTime: 134, endTime: 137, style: 'whisper' },
+  { text: 'Gravity fades to nothing.', startTime: 138, endTime: 141, style: 'normal' },
+  { text: 'Weightless.', startTime: 142, endTime: 145, style: 'dramatic' },
+  { text: 'Your dust floats suspended', startTime: 145, endTime: 148, style: 'normal' },
+  { text: 'in the iron heart of the world.', startTime: 148, endTime: 151, style: 'whisper' },
 ]
 
 // Death milestones
