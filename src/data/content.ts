@@ -1,5 +1,5 @@
 // Total duration in seconds
-export const TOTAL_DURATION = 151
+export const TOTAL_DURATION = 175
 
 // Narrative text styles
 export type NarrativeStyle = 'normal' | 'dramatic' | 'whisper' | 'data'
@@ -24,6 +24,7 @@ export const PHASES: Phase[] = [
   { name: 'Outer Core', startTime: 86, endTime: 111, startDepth: 2900, endDepth: 5150 },
   { name: 'Inner Core', startTime: 111, endTime: 131, startDepth: 5150, endDepth: 6300 },
   { name: 'The Center', startTime: 131, endTime: 151, startDepth: 6300, endDepth: 6371 },
+  { name: 'The Yo-Yo', startTime: 151, endTime: 175, startDepth: 6371, endDepth: 6371 }, // Oscillating around center
 ]
 
 // Earth layer definitions
@@ -148,8 +149,17 @@ export const NARRATIVE: NarrativeEntry[] = [
   { text: 'You\'re almost there.', startTime: 134, endTime: 137, style: 'whisper' },
   { text: 'Gravity fades to nothing.', startTime: 138, endTime: 141, style: 'normal' },
   { text: 'Weightless.', startTime: 142, endTime: 145, style: 'dramatic' },
-  { text: 'Your dust floats suspended', startTime: 145, endTime: 148, style: 'normal' },
-  { text: 'in the iron heart of the world.', startTime: 148, endTime: 151, style: 'whisper' },
+  { text: 'You reach the center.', startTime: 145, endTime: 148, style: 'normal' },
+
+  // The Yo-Yo
+  { text: 'But you don\'t stop.', startTime: 151, endTime: 154, style: 'normal' },
+  { text: 'Momentum carries you through.', startTime: 154, endTime: 157, style: 'whisper' },
+  { text: 'Now "down" is the other way.', startTime: 158, endTime: 161, style: 'normal' },
+  { text: 'You slow... and reverse.', startTime: 162, endTime: 165, style: 'whisper' },
+  { text: 'Back and forth.', startTime: 166, endTime: 168, style: 'normal' },
+  { text: 'Like a yo-yo.', startTime: 168, endTime: 170, style: 'whisper' },
+  { text: 'Until finally...', startTime: 171, endTime: 173, style: 'whisper' },
+  { text: 'You float. Suspended.', startTime: 173, endTime: 175, style: 'dramatic' },
 ]
 
 // Death milestones
@@ -175,6 +185,19 @@ export function getPhaseAtTime(time: number): Phase | undefined {
 export function getDepthAtTime(time: number): number {
   const phase = getPhaseAtTime(time)
   if (!phase) return 0
+
+  // Special handling for yo-yo phase - oscillate around center
+  if (phase.name === 'The Yo-Yo') {
+    const yoyoProgress = (time - phase.startTime) / (phase.endTime - phase.startTime)
+    // Damped oscillation: starts at 200km amplitude, decays to 0
+    const amplitude = 200 * Math.exp(-yoyoProgress * 3) // Exponential decay
+    const frequency = 3 // Number of oscillations
+    const oscillation = amplitude * Math.sin(yoyoProgress * frequency * Math.PI * 2)
+    // Return depth oscillating around center (6371)
+    // Positive oscillation = past center (going toward other side)
+    // We show this as still 6371 but could visualize differently
+    return 6371 + oscillation
+  }
 
   const phaseProgress = (time - phase.startTime) / (phase.endTime - phase.startTime)
   const depth = phase.startDepth + (phase.endDepth - phase.startDepth) * phaseProgress
@@ -220,7 +243,9 @@ export function getElapsedHours(time: number): number {
   if (time <= 86) return 12 + ((time - 46) / 40) * 120
   if (time <= 111) return 132 + ((time - 86) / 25) * 24
   if (time <= 131) return 156 + ((time - 111) / 20) * 8
-  return 164 + ((time - 131) / 20) * 4
+  if (time <= 151) return 164 + ((time - 131) / 20) * 4
+  // Yo-yo phase: just a bit more time passes as you oscillate
+  return 168 + ((time - 151) / 24) * 2 // Final ~170 hours total
 }
 
 export function getTemperatureAtDepth(depth: number): number {

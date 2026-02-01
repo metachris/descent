@@ -9,7 +9,13 @@ export default function VerticalMinimap() {
   const depth = getDepthAtTime(currentTime)
 
   // Position marker based on actual depth (proportional to Earth's radius)
-  const depthPercent = Math.min((depth / EARTH_RADIUS) * 100, 100)
+  // During yo-yo phase, depth oscillates around center (can exceed 6371)
+  // We show this as oscillating around the bottom of the bar
+  const isYoyo = depth > EARTH_RADIUS
+  const effectiveDepth = isYoyo
+    ? EARTH_RADIUS - (depth - EARTH_RADIUS) // Mirror back from center
+    : depth
+  const depthPercent = Math.min((effectiveDepth / EARTH_RADIUS) * 100, 100)
 
   // Current layer for highlighting
   const currentLayer = LAYERS.find(l => depth >= l.startDepth && depth <= l.endDepth)
@@ -102,9 +108,9 @@ export default function VerticalMinimap() {
         </div>
       </div>
 
-      {/* Debug: show depth percentage */}
+      {/* Debug: show depth */}
       <div className="absolute -bottom-6 left-0 text-[9px] text-white/30 font-mono">
-        {depth.toFixed(0)} km
+        {isYoyo ? `${(depth - EARTH_RADIUS).toFixed(0)} km past` : `${depth.toFixed(0)} km`}
       </div>
     </div>
   )

@@ -52,6 +52,11 @@ const PHASE_VISUALS: Record<string, {
     overlay: 'radial-gradient(ellipse at 50% 50%, rgba(254, 243, 199, 0.5) 0%, transparent 40%)',
     particles: 'float',
   },
+  'The Yo-Yo': {
+    gradient: 'radial-gradient(ellipse at 50% 50%, #fef3c7 0%, #fcd34d 10%, #f59e0b 30%, #b45309 60%, #78350f 100%)',
+    overlay: 'radial-gradient(ellipse at 50% 50%, rgba(254, 243, 199, 0.4) 0%, transparent 40%)',
+    particles: 'float',
+  },
 }
 
 export default function PhaseVisual() {
