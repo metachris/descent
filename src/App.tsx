@@ -14,12 +14,17 @@ function AppContent() {
   const [showEnd, setShowEnd] = useState(false)
   const { progress, play, seek } = useJourney()
 
-  // Show end screen when journey completes
+  // Show end screen when journey completes (with delay for last text)
   useEffect(() => {
-    if (progress >= 0.99 && hasStarted) {
-      setShowEnd(true)
+    if (progress >= 0.99 && hasStarted && !showEnd) {
+      // Wait 4 seconds after journey ends to show the end screen
+      // This lets the final narrative text be read
+      const timer = setTimeout(() => {
+        setShowEnd(true)
+      }, 4000)
+      return () => clearTimeout(timer)
     }
-  }, [progress, hasStarted])
+  }, [progress, hasStarted, showEnd])
 
   const handleStart = () => {
     setHasStarted(true)

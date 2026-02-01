@@ -1,34 +1,51 @@
 import { useJourney } from '../hooks/useJourney'
 import { LAYERS, getDepthAtTime } from '../data/content'
 
+const EARTH_RADIUS = 6371
+
 export default function VerticalMinimap() {
   const { progress, duration } = useJourney()
   const currentTime = progress * duration
   const depth = getDepthAtTime(currentTime)
 
+  // Position marker based on actual depth (proportional to Earth's radius)
+  const depthPercent = Math.min((depth / EARTH_RADIUS) * 100, 100)
+
   // Current layer for highlighting
   const currentLayer = LAYERS.find(l => depth >= l.startDepth && depth <= l.endDepth)
 
   return (
-    <div
-      className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-3 z-10"
-      style={{ '--progress': progress } as React.CSSProperties}
-    >
-      {/* Vertical bar */}
-      <div className="relative w-3 h-80 rounded-full overflow-hidden bg-white/10">
-        {/* Gradient fill showing progress */}
-        <div
-          className="absolute top-0 left-0 right-0 bg-gradient-to-b from-white/30 to-white/10"
-          style={{ height: `calc(var(--progress) * 100%)` }}
-        />
+    <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-3 z-10">
+      {/* Vertical bar with real Earth layer proportions */}
+      <div className="relative w-4 h-80 rounded-full overflow-hidden bg-white/5 shadow-lg">
+        {/* Earth layers - sized by real proportions */}
+        {LAYERS.map((layer) => {
+          const topPercent = (layer.startDepth / EARTH_RADIUS) * 100
+          const heightPercent = ((layer.endDepth - layer.startDepth) / EARTH_RADIUS) * 100
+
+          const isActive = currentLayer?.name === layer.name
+
+          return (
+            <div
+              key={layer.name}
+              className="absolute left-0 right-0 transition-opacity duration-300"
+              style={{
+                top: `${topPercent}%`,
+                height: `${Math.max(heightPercent, 0.5)}%`, // Min height for visibility
+                backgroundColor: layer.color,
+                opacity: isActive ? 1 : 0.6,
+              }}
+            />
+          )
+        })}
 
         {/* Current position marker */}
         <div
           className="absolute left-0 right-0 pointer-events-none"
-          style={{ top: `calc(var(--progress) * 100%)` }}
+          style={{ top: `${depthPercent}%` }}
         >
           {/* Line */}
-          <div className="absolute -left-1 -right-1 h-0.5 bg-white -translate-y-1/2" />
+          <div className="absolute -left-1 -right-1 h-0.5 bg-white -translate-y-1/2 shadow-lg" />
 
           {/* Arrow */}
           <div className="absolute -right-2.5 -translate-y-1/2">
@@ -42,25 +59,32 @@ export default function VerticalMinimap() {
         </div>
       </div>
 
-      {/* Earth layer labels */}
+      {/* Layer labels - positioned by real depth */}
       <div className="relative h-80 text-[10px] text-white/60">
         {/* Surface */}
-        <div className="absolute top-0 left-0 text-white/40">
-          Surface
+        <div className="absolute -top-1 left-0 text-white/50 font-medium">
+          0 km
         </div>
 
         {/* Layer names */}
         {LAYERS.map((layer) => {
-          const layerMidDepth = (layer.startDepth + layer.endDepth) / 2
-          const approxTimelinePosition = getTimelinePositionForDepth(layerMidDepth)
+          const topPercent = (layer.startDepth / EARTH_RADIUS) * 100
+          const heightPercent = ((layer.endDepth - layer.startDepth) / EARTH_RADIUS) * 100
+          const centerPercent = topPercent + heightPercent / 2
+
           const isActive = currentLayer?.name === layer.name
+
+          // Show all layers, but adjust position for thin ones
+          const displayPercent = layer.name === 'Crust'
+            ? 2 // Crust is too thin, show label slightly lower
+            : centerPercent
 
           return (
             <div
               key={layer.name}
-              className="absolute left-0 whitespace-nowrap"
+              className="absolute left-0 whitespace-nowrap transition-all duration-300"
               style={{
-                top: `${approxTimelinePosition}%`,
+                top: `${displayPercent}%`,
                 transform: 'translateY(-50%)',
                 color: isActive ? layer.color : undefined,
                 opacity: isActive ? 1 : 0.5,
@@ -73,27 +97,15 @@ export default function VerticalMinimap() {
         })}
 
         {/* Center */}
-        <div className="absolute bottom-0 left-0 text-white/40">
-          Center
+        <div className="absolute -bottom-1 left-0 text-white/50 font-medium">
+          6,371 km
         </div>
       </div>
 
-      {/* Debug: show progress value */}
+      {/* Debug: show depth percentage */}
       <div className="absolute -bottom-6 left-0 text-[9px] text-white/30 font-mono">
-        {(progress * 100).toFixed(1)}%
+        {depth.toFixed(0)} km
       </div>
     </div>
   )
-}
-
-function getTimelinePositionForDepth(depth: number): number {
-  if (depth <= 400) {
-    return (depth / 400) * 30
-  } else if (depth <= 2900) {
-    return 30 + ((depth - 400) / 2500) * 27
-  } else if (depth <= 5150) {
-    return 57 + ((depth - 2900) / 2250) * 16
-  } else {
-    return 73 + ((depth - 5150) / 1221) * 27
-  }
 }
