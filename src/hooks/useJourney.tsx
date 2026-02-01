@@ -32,22 +32,16 @@ const JourneyContext = createContext<JourneyContextType | null>(null)
 export function JourneyProvider({ children }: { children: ReactNode }) {
   const [progress, setProgress] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
+
+  // Ref is the source of truth during playback
   const progressRef = useRef(0)
 
-  // Keep ref in sync with state
+  // Sync ref when state changes (from seek or external updates)
   useEffect(() => {
     progressRef.current = progress
   }, [progress])
 
-  // Subscribe to Theatre.js value changes
-  useEffect(() => {
-    const unsubscribe = journeyObj.onValuesChange((values) => {
-      setProgress(values.progress)
-    })
-    return unsubscribe
-  }, [])
-
-  // Playback animation
+  // Playback animation loop
   useEffect(() => {
     if (!isPlaying) return
 
@@ -55,15 +49,17 @@ export function JourneyProvider({ children }: { children: ReactNode }) {
     let lastTime = performance.now()
 
     const animate = (currentTime: number) => {
-      const delta = (currentTime - lastTime) / 1000 // Convert to seconds
+      const delta = (currentTime - lastTime) / 1000
       lastTime = currentTime
 
-      // Use ref to get current progress (avoids stale closure)
-      const currentProgress = progressRef.current
-      const newProgress = Math.max(0, Math.min(currentProgress + delta / TOTAL_DURATION, 1))
+      // Update ref directly (source of truth during playback)
+      const newProgress = Math.max(0, Math.min(progressRef.current + delta / TOTAL_DURATION, 1))
+      progressRef.current = newProgress
 
-      // Update Theatre.js sequence position (ensure non-negative)
+      // Update Theatre.js
       sheet.sequence.position = Math.max(0, newProgress * TOTAL_DURATION)
+
+      // Update React state for UI
       setProgress(newProgress)
 
       if (newProgress >= 1) {
@@ -90,9 +86,10 @@ export function JourneyProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const seek = useCallback((newProgress: number) => {
-    const clampedProgress = Math.max(0, Math.min(1, newProgress))
-    sheet.sequence.position = clampedProgress * TOTAL_DURATION
-    setProgress(clampedProgress)
+    const clamped = Math.max(0, Math.min(1, newProgress))
+    progressRef.current = clamped
+    sheet.sequence.position = clamped * TOTAL_DURATION
+    setProgress(clamped)
   }, [])
 
   const toggle = useCallback(() => {
@@ -124,5 +121,4 @@ export function useJourney(): JourneyContextType {
   return context
 }
 
-// Export Theatre.js objects for direct animation binding
 export { project, sheet, journeyObj }
