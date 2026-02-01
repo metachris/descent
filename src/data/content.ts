@@ -200,19 +200,22 @@ export function getDayAtTime(time: number): number {
 }
 
 // Get elapsed in-story time in hours
+// Returns -1 for "not started yet" (standing at edge)
 // The journey takes ~7 days (168 hours) total
 export function getElapsedHours(time: number): number {
   // Timeline mapping (animation seconds → story hours):
-  // 0-8s (Edge): 0 hours
-  // 8-14s (Plunge): 0-0.5 hours
+  // 0-8s (Edge): not started (-1)
+  // 8-10s (Plunge start): 0 (just jumped)
+  // 10-14s (Plunge): 0-0.5 hours (first 30 min of falling)
   // 14-46s (Deaths): 0.5-12 hours (first half day)
-  // 46-86s (Long Fall): 12-132 hours (days 1-5.5)
+  // 46-86s (Long Fall): 12-132 hours (days 0.5-5.5)
   // 86-111s (Outer Core): 132-156 hours (day 5.5-6.5)
   // 111-131s (Inner Core): 156-164 hours (day 6.5-7)
   // 131-151s (Center): 164-168 hours (final hours)
 
-  if (time <= 8) return 0
-  if (time <= 14) return ((time - 8) / 6) * 0.5
+  if (time <= 8) return -1  // Standing at edge, not started
+  if (time <= 10) return 0  // Just jumped
+  if (time <= 14) return ((time - 10) / 4) * 0.5  // First 30 min
   if (time <= 46) return 0.5 + ((time - 14) / 32) * 11.5
   if (time <= 86) return 12 + ((time - 46) / 40) * 120
   if (time <= 111) return 132 + ((time - 86) / 25) * 24

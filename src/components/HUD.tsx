@@ -21,16 +21,23 @@ export default function HUD() {
     return `${Math.round(km).toLocaleString('en-US')} km`
   }
 
-  // Format elapsed time - hours until 72h, then days
-  const formatElapsedTime = (hours: number) => {
+  // Format elapsed time
+  // -1 = not started, show "--"
+  // < 1 hour = show minutes
+  // 1-24 hours = show hours
+  // > 24 hours = show days (smoother transition)
+  const formatElapsedTime = (hours: number): string => {
+    if (hours < 0) return '--'
     if (hours < 1) {
       const minutes = Math.round(hours * 60)
-      return minutes === 0 ? '0 min' : `${minutes} min`
+      return `${minutes} min`
     }
-    if (hours < 72) {
+    if (hours < 24) {
       return `${Math.round(hours)} hr`
     }
+    // Show days with one decimal for smooth transition
     const days = hours / 24
+    if (days < 1.05) return '1 day'
     return `${days.toFixed(1)} days`
   }
 
