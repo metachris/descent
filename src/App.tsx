@@ -12,16 +12,70 @@ import { JourneyProvider, useJourney } from './hooks/useJourney'
 function AppContent() {
   const [hasStarted, setHasStarted] = useState(false)
   const [showEnd, setShowEnd] = useState(false)
-  const { progress, play, seek } = useJourney()
+  const { progress, duration, isPlaying, play, pause, toggle, seek } = useJourney()
+
+  // Keyboard shortcuts for playback control
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return
+      }
+
+      const SKIP_SECONDS = 5
+      const currentTime = progress * duration
+
+      switch (e.code) {
+        case 'Space':
+          e.preventDefault()
+          if (!hasStarted) {
+            setHasStarted(true)
+            seek(0)
+            setTimeout(() => play(), 100)
+          } else {
+            toggle()
+          }
+          break
+        case 'ArrowLeft':
+          e.preventDefault()
+          seek(Math.max(0, (currentTime - SKIP_SECONDS) / duration))
+          break
+        case 'ArrowRight':
+          e.preventDefault()
+          seek(Math.min(1, (currentTime + SKIP_SECONDS) / duration))
+          break
+        case 'KeyR':
+        case 'Home':
+          e.preventDefault()
+          setShowEnd(false)
+          seek(0)
+          if (!isPlaying) play()
+          break
+        case 'End':
+          e.preventDefault()
+          seek(0.99)
+          break
+        case 'KeyF':
+          // Shift+F for hard refresh (useful for dev)
+          if (e.shiftKey) {
+            e.preventDefault()
+            window.location.reload()
+          }
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [hasStarted, progress, duration, isPlaying, play, pause, toggle, seek])
 
   // Show end screen when journey completes (with delay for last text)
   useEffect(() => {
     if (progress >= 0.99 && hasStarted && !showEnd) {
-      // Wait 4 seconds after journey ends to show the end screen
-      // This lets the final narrative text be read
+      // Short delay after journey ends - text has already faded
       const timer = setTimeout(() => {
         setShowEnd(true)
-      }, 4000)
+      }, 1500)
       return () => clearTimeout(timer)
     }
   }, [progress, hasStarted, showEnd])

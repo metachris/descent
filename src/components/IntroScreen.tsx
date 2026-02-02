@@ -81,7 +81,7 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
         </button>
 
         <p className="text-sm md:text-base text-white/40 mt-10">
-          ~3 minutes · Best with sound
+          ~3.5 minutes · Best with sound
         </p>
       </div>
 
