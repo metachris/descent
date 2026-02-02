@@ -1,5 +1,5 @@
 // Total duration in seconds
-export const TOTAL_DURATION = 175
+export const TOTAL_DURATION = 177
 
 // Narrative text styles
 export type NarrativeStyle = 'normal' | 'dramatic' | 'whisper' | 'data'
@@ -24,7 +24,7 @@ export const PHASES: Phase[] = [
   { name: 'Outer Core', startTime: 86, endTime: 111, startDepth: 2900, endDepth: 5150 },
   { name: 'Inner Core', startTime: 111, endTime: 131, startDepth: 5150, endDepth: 6300 },
   { name: 'The Center', startTime: 131, endTime: 151, startDepth: 6300, endDepth: 6371 },
-  { name: 'The Yo-Yo', startTime: 151, endTime: 175, startDepth: 6371, endDepth: 6371 }, // Oscillating around center
+  { name: 'The Yo-Yo', startTime: 151, endTime: 177, startDepth: 6371, endDepth: 6371 }, // Oscillating around center
 ]
 
 // Earth layer definitions
@@ -158,8 +158,8 @@ export const NARRATIVE: NarrativeEntry[] = [
   { text: 'You slow... and reverse.', startTime: 162, endTime: 165, style: 'whisper' },
   { text: 'Back and forth.', startTime: 166, endTime: 168, style: 'normal' },
   { text: 'Like a yo-yo.', startTime: 168, endTime: 170, style: 'whisper' },
-  { text: 'Until finally...', startTime: 171, endTime: 173, style: 'whisper' },
-  { text: 'You float. Suspended.', startTime: 173, endTime: 175, style: 'dramatic' },
+  { text: 'Until finally...', startTime: 170, endTime: 172, style: 'whisper' },
+  { text: 'You have arrived.', startTime: 173, endTime: 177, style: 'dramatic' },
 ]
 
 // Death milestones
@@ -245,7 +245,7 @@ export function getElapsedHours(time: number): number {
   if (time <= 131) return 156 + ((time - 111) / 20) * 8
   if (time <= 151) return 164 + ((time - 131) / 20) * 4
   // Yo-yo phase: just a bit more time passes as you oscillate
-  return 168 + ((time - 151) / 24) * 2 // Final ~170 hours total
+  return 168 + ((time - 151) / 26) * 2 // Final ~170 hours total
 }
 
 export function getTemperatureAtDepth(depth: number): number {
