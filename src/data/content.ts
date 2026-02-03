@@ -96,7 +96,7 @@ export const NARRATIVE: NarrativeEntry[] = [
   // THE PLUNGE (10-17s) — The jump
   // ═══════════════════════════════════════════════════════════════
   { text: 'You step forward.', startTime: 10, endTime: 13.5, style: 'dramatic' },
-  { text: 'The long fall begins.', startTime: 14, endTime: 17, style: 'normal' },
+  { text: 'The fall begins.', startTime: 14, endTime: 17, style: 'normal' },
 
   // ═══════════════════════════════════════════════════════════════
   // HEAT DEATH (17-26s) — First death
@@ -139,17 +139,23 @@ export const NARRATIVE: NarrativeEntry[] = [
   // ═══════════════════════════════════════════════════════════════
   // OUTER CORE (98-125s) — Wonder, tone shift
   // ═══════════════════════════════════════════════════════════════
-  { text: 'Everything changes.', startTime: 98.5, endTime: 102.5, style: 'dramatic' },
-  { text: '4,000°C', startTime: 103.5, endTime: 106.5, style: 'data' },
-  { text: 'A sea of molten iron.', startTime: 107.5, endTime: 111.5, style: 'normal' },
-  { text: 'A liquid metal ocean,', startTime: 112.5, endTime: 116.5, style: 'normal' },
+  { text: '4,000°C.', startTime: 98.5, endTime: 102.5, style: 'dramatic' },
+  { text: 'A sea of molten iron and nickel,', startTime: 103.5, endTime: 106.5, style: 'data' },
+  { text: 'as hot as the surface of the sun.', startTime: 107.5, endTime: 111.5, style: 'normal' },
+  { text: 'A liquid metal ocean', startTime: 112.5, endTime: 116.5, style: 'normal' },
   { text: 'generating Earth\'s magnetic field.', startTime: 117, endTime: 121, style: 'whisper' },
-  { text: 'This place is magnificent.', startTime: 122, endTime: 125, style: 'dramatic' },
+  { text: 'This place is incomprehensible.', startTime: 122, endTime: 125, style: 'dramatic' }, // todo: better wording
+  // { text: 'Everything changes.', startTime: 98.5, endTime: 102.5, style: 'dramatic' },
+  // { text: '4,000°C', startTime: 103.5, endTime: 106.5, style: 'data' },
+  // { text: 'A sea of molten iron and nickel,', startTime: 107.5, endTime: 111.5, style: 'normal' },
+  // { text: 'as hot as the surface of the sun,', startTime: 112.5, endTime: 116.5, style: 'normal' },
+  // { text: 'generating Earth\'s magnetic field.', startTime: 117, endTime: 121, style: 'whisper' },
+  // { text: 'This place is magnificent.', startTime: 122, endTime: 125, style: 'dramatic' }, // todo: better wording
 
   // ═══════════════════════════════════════════════════════════════
   // INNER CORE (125-148s) — Slowing down
   // ═══════════════════════════════════════════════════════════════
-  { text: 'The pressure is immense...', startTime: 126, endTime: 130, style: 'normal' },
+  { text: 'The pressure is so immense...', startTime: 126, endTime: 130, style: 'normal' },
   { text: 'that iron becomes solid again.', startTime: 130.5, endTime: 134.5, style: 'normal' },
   { text: 'A crystal sphere, larger than the moon.', startTime: 136, endTime: 140, style: 'whisper' },
   { text: 'You\'re slowing down.', startTime: 141, endTime: 144, style: 'normal' },
