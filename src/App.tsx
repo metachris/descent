@@ -4,7 +4,6 @@ import Timeline from './components/Timeline'
 import Narrative from './components/Narrative'
 import HUD from './components/HUD'
 import VerticalMinimap from './components/VerticalMinimap'
-import AudioController from './components/AudioController'
 import IntroScreen from './components/IntroScreen'
 import EndScreen from './components/EndScreen'
 import { JourneyProvider, useJourney } from './hooks/useJourney'
@@ -44,7 +43,6 @@ function AppContent() {
           e.preventDefault()
           seek(Math.min(1, (currentTime + SKIP_SECONDS) / duration))
           break
-        case 'KeyR':
         case 'Home':
           e.preventDefault()
           setShowEnd(false)
@@ -56,10 +54,25 @@ function AppContent() {
           seek(0.99)
           break
         case 'KeyF':
-          // Shift+F for hard refresh (useful for dev)
+          // F for fullscreen toggle
+          e.preventDefault()
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen()
+          } else {
+            document.exitFullscreen()
+          }
+          break
+        case 'KeyR':
+          // Shift+R for hard refresh (useful for dev)
           if (e.shiftKey) {
             e.preventDefault()
             window.location.reload()
+          } else {
+            // R alone = restart
+            e.preventDefault()
+            setShowEnd(false)
+            seek(0)
+            if (!isPlaying) play()
           }
           break
       }
@@ -104,7 +117,6 @@ function AppContent() {
           <HUD />
           <VerticalMinimap />
           <Timeline />
-          <AudioController />
         </>
       )}
 
