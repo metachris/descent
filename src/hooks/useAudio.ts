@@ -409,6 +409,14 @@ function updateSoundscape(e: AudioEngine, progress: number) {
     (progress > 0.20 && progress < 0.55) ? 1 : 0,
     now + ramp
   )
+
+  // === FINAL FADE OUT ===
+  // Fade everything to silence at the very end (last 5%)
+  if (progress > 0.95) {
+    const fadeProgress = (progress - 0.95) / 0.05 // 0 → 1 over last 5%
+    const fadeMultiplier = 1 - fadeProgress
+    e.masterGain.gain.linearRampToValueAtTime(0.7 * fadeMultiplier, now + ramp)
+  }
 }
 
 // Start/stop rumble events based on progress
