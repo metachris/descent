@@ -108,13 +108,13 @@ export const NARRATIVE: NarrativeEntry[] = [
   // ═══════════════════════════════════════════════════════════════
   // BOILING (26-33s) — Consciousness ends
   // ═══════════════════════════════════════════════════════════════
-  { text: 'Heat stroke takes you quickly.', startTime: 26.5, endTime: 30, style: 'normal' },
-  { text: 'Your consciousness fades.', startTime: 30.5, endTime: 33, style: 'whisper' },
+  { text: 'The heat takes you.', startTime: 26.5, endTime: 30, style: 'normal' },
+  { text: 'You slip away.', startTime: 30.5, endTime: 33, style: 'whisper' },
 
   // ═══════════════════════════════════════════════════════════════
   // CRUSHING (33-42s) — Body continues without you
   // ═══════════════════════════════════════════════════════════════
-  { text: 'Your body continues down.', startTime: 34, endTime: 37.5, style: 'normal' },
+  { text: 'What remains of you continues down.', startTime: 34, endTime: 37.5, style: 'normal' },
   { text: 'Deeper than any human has ever been.', startTime: 38, endTime: 41.5, style: 'whisper' },
 
   // ═══════════════════════════════════════════════════════════════
@@ -129,34 +129,29 @@ export const NARRATIVE: NarrativeEntry[] = [
   // ═══════════════════════════════════════════════════════════════
   { text: 'Your dust falls.', startTime: 55, endTime: 58.5, style: 'whisper' },
   { text: 'And falls.', startTime: 62, endTime: 65, style: 'whisper' },
-  { text: 'And falls.', startTime: 70, endTime: 73, style: 'whisper' },
+  { text: 'And falls.', startTime: 68, endTime: 71, style: 'whisper' },
   // — silence —
-  { text: 'Days pass.', startTime: 78, endTime: 82, style: 'normal' },
+  { text: 'Days pass.', startTime: 74, endTime: 78, style: 'normal' },
   // — silence —
-  { text: 'The mantle surrounds you', startTime: 86, endTime: 90, style: 'normal' },
-  { text: 'hot, solid rock flowing like honey over eons.', startTime: 90.5, endTime: 95, style: 'whisper' },
+  { text: 'The mantle surrounds you', startTime: 81, endTime: 85, style: 'normal' },
+  { text: 'hot, solid rock flowing like honey over eons.', startTime: 85.5, endTime: 90, style: 'whisper' },
 
   // ═══════════════════════════════════════════════════════════════
   // OUTER CORE (98-125s) — Wonder, tone shift
   // ═══════════════════════════════════════════════════════════════
-  { text: '4,000°C.', startTime: 98.5, endTime: 102.5, style: 'dramatic' },
-  { text: 'A sea of molten iron and nickel,', startTime: 103.5, endTime: 106.5, style: 'data' },
-  { text: 'as hot as the surface of the sun.', startTime: 107.5, endTime: 111.5, style: 'normal' },
+  { text: 'Everything changes.', startTime: 93, endTime: 97, style: 'dramatic' },
+  { text: 'A sea of molten iron and nickel,', startTime: 98.5, endTime: 102.5, style: 'normal' },
+  { text: 'as hot as the surface of the sun.', startTime: 103.5, endTime: 106.5, style: 'normal' },
+  { text: '5,000°C', startTime: 107.5, endTime: 111.5, style: 'data' },
   { text: 'A liquid metal ocean', startTime: 112.5, endTime: 116.5, style: 'normal' },
-  { text: 'generating Earth\'s magnetic field.', startTime: 117, endTime: 121, style: 'whisper' },
-  { text: 'This place is incomprehensible.', startTime: 122, endTime: 125, style: 'dramatic' }, // todo: better wording
-  // { text: 'Everything changes.', startTime: 98.5, endTime: 102.5, style: 'dramatic' },
-  // { text: '4,000°C', startTime: 103.5, endTime: 106.5, style: 'data' },
-  // { text: 'A sea of molten iron and nickel,', startTime: 107.5, endTime: 111.5, style: 'normal' },
-  // { text: 'as hot as the surface of the sun,', startTime: 112.5, endTime: 116.5, style: 'normal' },
-  // { text: 'generating Earth\'s magnetic field.', startTime: 117, endTime: 121, style: 'whisper' },
-  // { text: 'This place is magnificent.', startTime: 122, endTime: 125, style: 'dramatic' }, // todo: better wording
+  { text: 'generating Earth\'s magnetic field.', startTime: 117, endTime: 120, style: 'whisper' },
+  { text: 'This place is incomprehensible.', startTime: 121, endTime: 124, style: 'normal' }, // todo: better wording
 
   // ═══════════════════════════════════════════════════════════════
   // INNER CORE (125-148s) — Slowing down
   // ═══════════════════════════════════════════════════════════════
-  { text: 'The pressure is so immense...', startTime: 126, endTime: 130, style: 'normal' },
-  { text: 'that iron becomes solid again.', startTime: 130.5, endTime: 134.5, style: 'normal' },
+  { text: 'The pressure is so immense...', startTime: 126, endTime: 129, style: 'normal' },
+  { text: 'that iron becomes solid again.', startTime: 129.5, endTime: 134.5, style: 'normal' },
   { text: 'A crystal sphere, larger than the moon.', startTime: 136, endTime: 140, style: 'whisper' },
   { text: 'You\'re slowing down.', startTime: 141, endTime: 144, style: 'normal' },
   { text: 'Less mass below you now. Less pull.', startTime: 144.5, endTime: 148, style: 'whisper' },
@@ -172,14 +167,14 @@ export const NARRATIVE: NarrativeEntry[] = [
   // ═══════════════════════════════════════════════════════════════
   // THE YO-YO (172-210s) — Oscillation and resolution
   // ═══════════════════════════════════════════════════════════════
-  { text: 'But you don\'t stop.', startTime: 173, endTime: 177, style: 'normal' },
+  { text: 'But you don\'t stop.', startTime: 172, endTime: 177, style: 'normal' },
   { text: 'Momentum carries you through.', startTime: 178, endTime: 182, style: 'whisper' },
   { text: 'Now "down" is the other way.', startTime: 184, endTime: 188, style: 'normal' },
-  { text: 'Back and forth.', startTime: 190, endTime: 194, style: 'whisper' },
-  { text: 'Like a yo-yo.', startTime: 196, endTime: 200, style: 'whisper' },
+  { text: 'You slow... and reverse.', startTime: 190, endTime: 194, style: 'whisper' },
+  { text: 'Back and forth.', startTime: 196, endTime: 200, style: 'whisper' },
   // — silence —
   { text: 'Until finally...', startTime: 203, endTime: 206, style: 'whisper' },
-  { text: 'You have arrived.', startTime: 206.5, endTime: 210, style: 'dramatic' },
+  { text: 'You arrive.', startTime: 206.5, endTime: 210, style: 'dramatic' },
 ]
 
 // Death milestones
