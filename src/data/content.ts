@@ -85,83 +85,95 @@ export interface NarrativeEntry {
 }
 
 export const NARRATIVE: NarrativeEntry[] = [
-  // Setup
-  { text: 'You stand at the edge.X5', startTime: 0, endTime: 3, style: 'normal' },
-  { text: 'The tunnel yawns before you.', startTime: 3, endTime: 6, style: 'normal' },
-  { text: '6,371 kilometers to the center.', startTime: 6, endTime: 9, style: 'data' },
+  // ═══════════════════════════════════════════════════════════════
+  // THE EDGE (0-10s) — Standing at the precipice
+  // ═══════════════════════════════════════════════════════════════
+  { text: 'You stand at the edge.', startTime: 0, endTime: 3.5, style: 'normal' },
+  { text: 'The tunnel yawns before you.', startTime: 4, endTime: 7.5, style: 'normal' },
+  { text: '6,371 kilometers to the center.', startTime: 7.5, endTime: 10, style: 'data' },
 
-  // The Plunge
-  { text: 'You step forward.', startTime: 10, endTime: 13, style: 'dramatic' },
-  { text: 'The long fall begins.', startTime: 13, endTime: 17, style: 'normal' },
-  { text: 'Gravity accelerates you.', startTime: 17.5, endTime: 21, style: 'whisper' },
+  // ═══════════════════════════════════════════════════════════════
+  // THE PLUNGE (10-17s) — The jump
+  // ═══════════════════════════════════════════════════════════════
+  { text: 'You step forward.', startTime: 10, endTime: 13.5, style: 'dramatic' },
+  { text: 'The long fall begins.', startTime: 14, endTime: 17, style: 'normal' },
 
-  // Heat Death
-  { text: '47°C', startTime: 22.5, endTime: 25, style: 'data' },
-  { text: 'Your skin burns.', startTime: 25.5, endTime: 28, style: 'normal' },
-  { text: 'Heat stroke takes you quickly.', startTime: 28.5, endTime: 32, style: 'normal' },
-  { text: 'Your consciousness fades.', startTime: 32.5, endTime: 36, style: 'whisper' },
+  // ═══════════════════════════════════════════════════════════════
+  // HEAT DEATH (17-26s) — First death
+  // ═══════════════════════════════════════════════════════════════
+  { text: 'Gravity accelerates you.', startTime: 17.5, endTime: 20, style: 'whisper' },
+  { text: '47°C', startTime: 20.5, endTime: 23, style: 'data' },
+  { text: 'Your skin burns.', startTime: 23.5, endTime: 26, style: 'normal' },
 
-  { text: 'Your body continues down.', startTime: 36.5, endTime: 40, style: 'normal' },
-  { text: 'Through the crust, into the mantle.', startTime: 40.5, endTime: 44, style: 'normal' },
-  { text: 'Deeper than any human has ever been.', startTime: 44.5, endTime: 48, style: 'normal' },
+  // ═══════════════════════════════════════════════════════════════
+  // BOILING (26-33s) — Consciousness ends
+  // ═══════════════════════════════════════════════════════════════
+  { text: 'Heat stroke takes you quickly.', startTime: 26.5, endTime: 30, style: 'normal' },
+  { text: 'Your consciousness fades.', startTime: 30.5, endTime: 33, style: 'whisper' },
 
-  // // Body continues
-  { text: '127°C', startTime: 50, endTime: 54, style: 'data' },
-  { text: 'Your fluids begin to boil.', startTime: 54, endTime: 60, style: 'whisper' },
+  // ═══════════════════════════════════════════════════════════════
+  // CRUSHING (33-42s) — Body continues without you
+  // ═══════════════════════════════════════════════════════════════
+  { text: 'Your body continues down.', startTime: 34, endTime: 37.5, style: 'normal' },
+  { text: 'Deeper than any human has ever been.', startTime: 38, endTime: 41.5, style: 'whisper' },
 
-  // Crushing
-  // { text: '20 atmospheres of pressure.', startTime: 82, endTime: 84.5, style: 'data' },
-  // { text: 'Bones crack. Flesh compacts.', startTime: 84.5, endTime: 87, style: 'whisper' },
+  // ═══════════════════════════════════════════════════════════════
+  // INCINERATION (42-54s) — Reduced to dust
+  // ═══════════════════════════════════════════════════════════════
+  { text: '927°C', startTime: 42.5, endTime: 45, style: 'data' },
+  { text: 'Bone becomes ash. Flesh becomes dust.', startTime: 45.5, endTime: 49, style: 'normal' },
+  { text: 'Only scattered atoms remain.', startTime: 50, endTime: 53.5, style: 'whisper' },
 
-  // // Incineration
-  // { text: '927°C', startTime: 88, endTime: 91, style: 'data' },
-  // { text: 'Bone becomes ash.', startTime: 92, endTime: 98, style: 'normal' },
-  // { text: 'Flesh becomes dust.', startTime: 99, endTime: 105, style: 'normal' },
+  // ═══════════════════════════════════════════════════════════════
+  // THE LONG FALL (54-98s) — Let it breathe, sparse text
+  // ═══════════════════════════════════════════════════════════════
+  { text: 'Your dust falls.', startTime: 55, endTime: 58.5, style: 'whisper' },
+  { text: 'And falls.', startTime: 62, endTime: 65, style: 'whisper' },
+  { text: 'And falls.', startTime: 70, endTime: 73, style: 'whisper' },
+  // — silence —
+  { text: 'Days pass.', startTime: 78, endTime: 82, style: 'normal' },
+  // — silence —
+  { text: 'The mantle surrounds you', startTime: 86, endTime: 90, style: 'normal' },
+  { text: 'hot, solid rock flowing like honey over eons.', startTime: 90.5, endTime: 95, style: 'whisper' },
 
-  // // The Long Fall
-  // { text: 'Your dust falls.', startTime: 108, endTime: 114, style: 'whisper' },
-  // { text: 'And falls.', startTime: 117, endTime: 123, style: 'whisper' },
-  // { text: 'And falls.', startTime: 52, endTime: 55, style: 'whisper' },
-  // { text: 'Days pass.', startTime: 127, endTime: 136, style: 'normal' },
-  // { text: 'The mantle surrounds you—', startTime: 65, endTime: 68, style: 'normal' },
-  // { text: 'hot, solid rock flowing like honey over eons.', startTime: 68, endTime: 72, style: 'whisper' },
-  // { text: 'You are scattered atoms now,', startTime: 75, endTime: 78, style: 'normal' },
-  // { text: 'falling through an alien world.', startTime: 78, endTime: 82, style: 'whisper' },
+  // ═══════════════════════════════════════════════════════════════
+  // OUTER CORE (98-125s) — Wonder, tone shift
+  // ═══════════════════════════════════════════════════════════════
+  { text: 'Everything changes.', startTime: 98.5, endTime: 102.5, style: 'dramatic' },
+  { text: '4,000°C', startTime: 103.5, endTime: 106.5, style: 'data' },
+  { text: 'A sea of molten iron.', startTime: 107.5, endTime: 111.5, style: 'normal' },
+  { text: 'A liquid metal ocean,', startTime: 112.5, endTime: 116.5, style: 'normal' },
+  { text: 'generating Earth\'s magnetic field.', startTime: 117, endTime: 121, style: 'whisper' },
+  { text: 'This place is magnificent.', startTime: 122, endTime: 125, style: 'dramatic' },
 
-  // // Wonder
-  // { text: 'Everything changes.', startTime: 140, endTime: 148, style: 'dramatic' },
-  // { text: 'A sea of molten iron,', startTime: 150, endTime: 156, style: 'normal' },
-  // { text: 'as hot as the surface of the sun.', startTime: 157, endTime: 164, style: 'normal' },
-  // { text: '4,000°C', startTime: 97, endTime: 99, style: 'data' },
-  // { text: 'A liquid metal ocean', startTime: 100, endTime: 103, style: 'normal' },
-  // { text: 'generating Earth\'s magnetic field.', startTime: 103, endTime: 107, style: 'whisper' },
-  // { text: 'This place is incomprehensible.', startTime: 107, endTime: 109, style: 'normal' },
-  // { text: 'This place is magnificent.', startTime: 109, endTime: 111, style: 'dramatic' },
+  // ═══════════════════════════════════════════════════════════════
+  // INNER CORE (125-148s) — Slowing down
+  // ═══════════════════════════════════════════════════════════════
+  { text: 'The pressure is immense...', startTime: 126, endTime: 130, style: 'normal' },
+  { text: 'that iron becomes solid again.', startTime: 130.5, endTime: 134.5, style: 'normal' },
+  { text: 'A crystal sphere, larger than the moon.', startTime: 136, endTime: 140, style: 'whisper' },
+  { text: 'You\'re slowing down.', startTime: 141, endTime: 144, style: 'normal' },
+  { text: 'Less mass below you now. Less pull.', startTime: 144.5, endTime: 148, style: 'whisper' },
 
-  // // Inner Core
-  // { text: 'The pressure is so immense', startTime: 111, endTime: 114, style: 'normal' },
-  // { text: 'that iron becomes solid again.', startTime: 114, endTime: 117, style: 'normal' },
-  // { text: 'A sphere of crystalline iron,', startTime: 118, endTime: 121, style: 'normal' },
-  // { text: 'larger than the moon.', startTime: 121, endTime: 123, style: 'whisper' },
-  // { text: '6,700°C', startTime: 123, endTime: 125, style: 'data' },
-  // { text: 'You\'re slowing down.', startTime: 126, endTime: 129, style: 'normal' },
-  // { text: 'Less mass below you now. Less pull.', startTime: 129, endTime: 133, style: 'whisper' },
+  // ═══════════════════════════════════════════════════════════════
+  // THE CENTER (148-172s) — Climax
+  // ═══════════════════════════════════════════════════════════════
+  { text: 'You\'re almost there.', startTime: 149, endTime: 152.5, style: 'whisper' },
+  { text: 'Gravity fades to nothing.', startTime: 154, endTime: 158, style: 'normal' },
+  { text: 'Weightless.', startTime: 160, endTime: 164, style: 'dramatic' },
+  { text: 'You reach the center of the Earth.', startTime: 166, endTime: 170, style: 'normal' },
 
-  // // The Center
-  // { text: 'You\'re almost there.', startTime: 134, endTime: 137, style: 'whisper' },
-  // { text: 'Gravity fades to nothing.', startTime: 138, endTime: 141, style: 'normal' },
-  // { text: 'Weightless.', startTime: 142, endTime: 145, style: 'dramatic' },
-  // { text: 'You reach the center.', startTime: 145, endTime: 148, style: 'normal' },
-
-  // // The Yo-Yo
-  // { text: 'But you don\'t stop.', startTime: 184, endTime: 189, style: 'normal' },
-  // { text: 'Momentum carries you through.', startTime: 154, endTime: 157, style: 'whisper' },
-  // { text: 'Now "down" is the other way.', startTime: 190, endTime: 195, style: 'normal' },
-  // { text: 'Back and forth. Like a yo-yo.', startTime: 196, endTime: 201, style: 'whisper' },
-  // { text: 'Until finally...', startTime: 202, endTime: 206, style: 'whisper' },
-
-  // Arrival
-  { text: 'You have arrived.', startTime: 207, endTime: 210, style: 'normal' },
+  // ═══════════════════════════════════════════════════════════════
+  // THE YO-YO (172-210s) — Oscillation and resolution
+  // ═══════════════════════════════════════════════════════════════
+  { text: 'But you don\'t stop.', startTime: 173, endTime: 177, style: 'normal' },
+  { text: 'Momentum carries you through.', startTime: 178, endTime: 182, style: 'whisper' },
+  { text: 'Now "down" is the other way.', startTime: 184, endTime: 188, style: 'normal' },
+  { text: 'Back and forth.', startTime: 190, endTime: 194, style: 'whisper' },
+  { text: 'Like a yo-yo.', startTime: 196, endTime: 200, style: 'whisper' },
+  // — silence —
+  { text: 'Until finally...', startTime: 203, endTime: 206, style: 'whisper' },
+  { text: 'You have arrived.', startTime: 206.5, endTime: 210, style: 'dramatic' },
 ]
 
 // Death milestones
