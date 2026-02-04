@@ -1,0 +1,60 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background gradient - deep space to earth core -->
+    <radialGradient id="bgGradient" cx="50%" cy="100%" r="100%">
+      <stop offset="0%" stop-color="#FFD700" stop-opacity="0.3"/>
+      <stop offset="30%" stop-color="#FF8C00" stop-opacity="0.2"/>
+      <stop offset="60%" stop-color="#8B4513" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#0a0a1a"/>
+    </radialGradient>
+
+    <!-- Tunnel gradient -->
+    <radialGradient id="tunnelGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000"/>
+      <stop offset="70%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#2d2d44"/>
+    </radialGradient>
+
+    <!-- Glow -->
+    <radialGradient id="glowGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFD700" stop-opacity="0.4"/>
+      <stop offset="50%" stop-color="#FF8C00" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0a0a1a"/>
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+  <!-- Tunnel rings suggesting depth -->
+  <ellipse cx="600" cy="500" rx="400" ry="200" fill="none" stroke="#3d3d5c" stroke-width="1" opacity="0.3"/>
+  <ellipse cx="600" cy="480" rx="350" ry="175" fill="none" stroke="#3d3d5c" stroke-width="1" opacity="0.35"/>
+  <ellipse cx="600" cy="460" rx="300" ry="150" fill="none" stroke="#4d4d6c" stroke-width="1" opacity="0.4"/>
+  <ellipse cx="600" cy="440" rx="250" ry="125" fill="none" stroke="#4d4d6c" stroke-width="1" opacity="0.45"/>
+  <ellipse cx="600" cy="420" rx="200" ry="100" fill="none" stroke="#5d5d7c" stroke-width="1" opacity="0.5"/>
+  <ellipse cx="600" cy="400" rx="150" ry="75" fill="none" stroke="#6d6d8c" stroke-width="1" opacity="0.55"/>
+  <ellipse cx="600" cy="380" rx="100" ry="50" fill="none" stroke="#7d7d9c" stroke-width="1" opacity="0.6"/>
+  <ellipse cx="600" cy="365" rx="60" ry="30" fill="none" stroke="#8d8dac" stroke-width="1" opacity="0.7"/>
+
+  <!-- Central glow from core -->
+  <ellipse cx="600" cy="550" rx="300" ry="150" fill="url(#glowGradient)"/>
+
+  <!-- Central darkness (the tunnel) -->
+  <ellipse cx="600" cy="355" rx="30" ry="15" fill="#000"/>
+
+  <!-- Title -->
+  <text x="600" y="180" text-anchor="middle" font-family="Georgia, serif" font-size="72" font-weight="400" fill="#ffffff" letter-spacing="8">
+    DESCENT
+  </text>
+
+  <!-- Subtitle -->
+  <text x="600" y="240" text-anchor="middle" font-family="Georgia, serif" font-size="24" fill="#ffffff" opacity="0.7">
+    A journey to the center of the Earth
+  </text>
+
+  <!-- Stats at bottom -->
+  <text x="600" y="590" text-anchor="middle" font-family="monospace" font-size="16" fill="#FFD700" opacity="0.8">
+    6,371 km  ·  7 days  ·  6,700°C
+  </text>
+</svg>

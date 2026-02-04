@@ -1,0 +1,97 @@
+# Building Descent: A Journey to the Center of the Earth
+
+What would happen if you jumped into a tunnel that went straight through the Earth? It's a classic physics thought experiment—one that usually ends with equations about simple harmonic motion and a neat answer of "38 minutes to the other side."
+
+But that answer assumes a vacuum. No air. No friction. In reality, you'd fall through air, hit terminal velocity around 200 km/h, and the journey would take about a week. You'd also die within the first kilometer from heat stroke.
+
+I wanted to build an experience that explores that reality—not as a physics lesson, but as a poetic, meditative journey. The result is **Descent**, a 3.5-minute immersive web experience that takes you falling through the Earth, layer by layer, death by death, until you reach the center.
+
+## The Vision: Experience Over Education
+
+From the start, I knew what I didn't want: a physics textbook with pretty graphics. The goal wasn't to teach people the exact temperature gradient of the mantle. It was to make them *feel* something—the vertigo of the fall, the horror of the deaths, the alien beauty of the outer core, the peace of finally arriving at the center.
+
+The guiding principle became: **poetry over precision**. The science is real—the temperatures, the layer depths, the pressure at the center—but it's delivered through intimate, second-person narrative rather than data dumps.
+
+"You stand at the edge. The tunnel yawns before you."
+
+Not: "The hypothetical tunnel has a diameter of..."
+
+## The Narrative Arc
+
+The experience follows you (literally—it's written in second person, present tense) as you fall. But here's the thing: you die at 1.1 kilometers. Heat stroke. 47°C.
+
+What happens for the remaining 6,370 kilometers? Your body continues. Then your remains. Then your dust. The narrative shifts from personal to posthumous, and somehow that makes it more poignant. You're no longer there, but the journey continues without you.
+
+The emotional arc moves through:
+- **Anticipation** at the edge
+- **Exhilaration** in the plunge
+- **Horror** through the deaths
+- **Meditation** during the long fall
+- **Awe** in the outer core
+- **Peace** at the center
+
+The pacing reflects this. Deaths are slow—you need time to process them. The long fall through the mantle is sparse, with text like "And falls. And falls." followed by silence. The arrival at the center breathes.
+
+## Technical Decisions
+
+### Animation vs. Scroll
+
+Early on I considered making this scroll-based—you scroll down, you descend. It's intuitive. But it has problems:
+
+1. Scroll hijacking frustrates users
+2. Pacing becomes user-controlled (bad for emotional beats)
+3. Mobile scroll behavior is unpredictable
+
+Instead, Descent plays like a video. It auto-plays with a timeline scrubber. You can pause, seek, skip—but the default experience has intentional pacing. This was the right call.
+
+### The Tech Stack
+
+- **React 18 + TypeScript** — Component architecture for the UI layers
+- **Vite** — Fast builds, great HMR, no configuration headaches
+- **Tailwind CSS** — Rapid styling without context-switching
+- **Zustand** — Minimal state management for playback state
+
+No 3D libraries. No WebGL. The visuals are CSS gradients, layered divs, and some canvas work for particles. This keeps it fast and accessible—no GPU requirements, works on any device.
+
+### Procedural Audio
+
+The sound design is entirely procedural—no audio files. The Web Audio API generates everything in real-time:
+
+- **Warm pad**: Four detuned triangle oscillators creating a rich, chorused drone
+- **Harmonic drone**: Perfect fifth intervals (E-B-E) that slowly descend as you fall
+- **Gentle wind**: Ultra-smooth brown noise, heavily filtered
+- **Crystalline shimmer**: High harmonics that fade in during the inner core
+- **Double reverb**: 4-second and 6-second convolution reverbs for depth
+
+The soundscape evolves with your progress. It swells during the plunge, fades during death, becomes vast and meditative during the long fall, and reaches maximum reverb at the center. No sudden changes—everything crossfades over 0.8 seconds or more.
+
+## Lessons Learned
+
+**Silence is content.** The long fall section has maybe 30 words across 44 seconds. That emptiness is intentional. It lets you feel the scale of time passing.
+
+**Data as poetry.** Showing "47°C" or "5,000°C" at key moments is more powerful than explaining what those temperatures mean. The number is the poetry.
+
+**The end matters.** When you reach the center, you don't stop—momentum carries you through. You oscillate back and forth, a human yo-yo, until finally settling at the exact center of the Earth. That physics detail (which is real) makes the ending feel earned.
+
+## Built with Claude Code
+
+This project was built collaboratively with Claude Code. The workflow was conversational—describing what I wanted, iterating on the narrative, debugging the audio system, refining the pacing. It's a different way of building software: more like directing than typing.
+
+Some things Claude Code handled particularly well:
+- Generating the procedural audio system from a description of the desired atmosphere
+- Iterating on narrative text with an understanding of emotional beats
+- Suggesting technical approaches (animation-based vs. scroll-based)
+
+The collaboration felt less like using a tool and more like working with someone who understood both the code and the creative intent.
+
+## Try It
+
+Descent is live at [descent.earth](https://descent.earth). Put on headphones, go fullscreen, and fall.
+
+The experience succeeds if you say "this made me feel something." That was always the goal—not to teach, but to evoke. To make the incomprehensible scale of our planet feel, for 3.5 minutes, almost comprehensible.
+
+6,371 kilometers. One week. One journey.
+
+---
+
+*Created by Chris Hager with Claude Code. Based on physics from Dr. Christopher S. Baird.*
