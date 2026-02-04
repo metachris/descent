@@ -139,18 +139,18 @@ export const NARRATIVE: NarrativeEntry[] = [
   // ═══════════════════════════════════════════════════════════════
   // OUTER CORE (98-125s) — Wonder, tone shift
   // ═══════════════════════════════════════════════════════════════
-  { text: 'Everything changes.', startTime: 93, endTime: 97, style: 'dramatic' },
+  { text: 'The rock gives way.', startTime: 93, endTime: 97, style: 'dramatic' },
   { text: 'A sea of molten iron and nickel,', startTime: 98.5, endTime: 102.5, style: 'normal' },
   { text: 'as hot as the surface of the sun.', startTime: 103.5, endTime: 106.5, style: 'normal' },
   { text: '5,000°C', startTime: 107.5, endTime: 111.5, style: 'data' },
   { text: 'A liquid metal ocean', startTime: 112.5, endTime: 116.5, style: 'normal' },
-  { text: 'generating Earth\'s magnetic field.', startTime: 117, endTime: 120, style: 'whisper' },
-  { text: 'This place is incomprehensible.', startTime: 121, endTime: 124, style: 'normal' }, // todo: better wording
+  { text: 'generating Earth\'s magnetic field.', startTime: 117, endTime: 121, style: 'whisper' },
+  // { text: 'This place is incomprehensible.', startTime: 121, endTime: 124, style: 'normal' }, // todo: better wording
 
   // ═══════════════════════════════════════════════════════════════
   // INNER CORE (125-148s) — Slowing down
   // ═══════════════════════════════════════════════════════════════
-  { text: 'The pressure is so immense...', startTime: 126, endTime: 129, style: 'normal' },
+  { text: 'The pressure is so immense...', startTime: 125, endTime: 129, style: 'normal' },
   { text: 'that iron becomes solid again.', startTime: 129.5, endTime: 134.5, style: 'normal' },
   { text: 'A crystal sphere, larger than the moon.', startTime: 136, endTime: 140, style: 'whisper' },
   { text: 'You\'re slowing down.', startTime: 141, endTime: 144, style: 'normal' },
@@ -161,8 +161,8 @@ export const NARRATIVE: NarrativeEntry[] = [
   // ═══════════════════════════════════════════════════════════════
   { text: 'You\'re almost there.', startTime: 149, endTime: 152.5, style: 'whisper' },
   { text: 'Gravity fades to nothing.', startTime: 154, endTime: 158, style: 'normal' },
-  { text: 'Weightless.', startTime: 160, endTime: 164, style: 'dramatic' },
-  { text: 'You reach the center of the Earth.', startTime: 166, endTime: 170, style: 'normal' },
+  { text: 'The center of the world.', startTime: 160, endTime: 164, style: 'dramatic' },
+  { text: 'Weightless.', startTime: 166, endTime: 170, style: 'normal' },
 
   // ═══════════════════════════════════════════════════════════════
   // THE YO-YO (172-210s) — Oscillation and resolution
@@ -174,7 +174,7 @@ export const NARRATIVE: NarrativeEntry[] = [
   { text: 'Back and forth.', startTime: 196, endTime: 200, style: 'whisper' },
   // — silence —
   { text: 'Until finally...', startTime: 203, endTime: 206, style: 'whisper' },
-  { text: 'You arrive.', startTime: 206.5, endTime: 210, style: 'dramatic' },
+  { text: 'You rest.', startTime: 206.5, endTime: 210, style: 'dramatic' },
 ]
 
 // Death milestones

@@ -1,93 +1,119 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 
-// Immersive evolving soundscape for the descent experience
-// Features: heartbeat, breathing LFOs, random events, distinct sections
+// Atmospheric ambient soundscape for the descent experience
+// Warm pads, gentle drones, evolving textures - not harsh oscillators
 
 interface AudioEngine {
   ctx: AudioContext
   masterGain: GainNode
 
-  // Heartbeat
-  heartOsc: OscillatorNode
-  heartGain: GainNode
-  heartLFO: OscillatorNode
-  heartLFOGain: GainNode
+  // Warm pad (multiple detuned oscillators)
+  padOscs: OscillatorNode[]
+  padGain: GainNode
+  padFilter: BiquadFilterNode
 
-  // Breath/wind texture
-  breathNoise: AudioBufferSourceNode
-  breathFilter: BiquadFilterNode
-  breathGain: GainNode
-
-  // Main drone
-  drone: OscillatorNode
-  droneGain: GainNode
-  droneLFO: OscillatorNode
-
-  // Sub bass
-  sub: OscillatorNode
+  // Deep sub-harmonic
+  subOsc: OscillatorNode
   subGain: GainNode
 
-  // Shimmer (for inner core/center)
-  shimmerOsc1: OscillatorNode
-  shimmerOsc2: OscillatorNode
-  shimmerGain: GainNode
+  // Gentle wind texture (very filtered noise)
+  windNoise: AudioBufferSourceNode
+  windFilter: BiquadFilterNode
+  windGain: GainNode
 
-  // Rumble events
-  rumbleGain: GainNode
+  // Harmonic drone (musical intervals)
+  droneOscs: OscillatorNode[]
+  droneGain: GainNode
+  droneFilter: BiquadFilterNode
+
+  // Shimmer (soft high harmonics for inner core)
+  shimmerOscs: OscillatorNode[]
+  shimmerGain: GainNode
+  shimmerFilter: BiquadFilterNode
 
   // Reverb
   convolver: ConvolverNode
   reverbGain: GainNode
   dryGain: GainNode
+
+  // Second reverb for extra depth
+  convolver2: ConvolverNode
+  reverb2Gain: GainNode
 }
 
-// Singleton
 let engine: AudioEngine | null = null
 let isEngineRunning = false
-let rumbleInterval: number | null = null
 
-// Create noise buffer
-function createNoiseBuffer(ctx: AudioContext, type: 'brown' | 'pink' = 'brown'): AudioBuffer {
-  const bufferSize = ctx.sampleRate * 4
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
-  const data = buffer.getChannelData(0)
+// Create smooth brown noise - very gentle, no harsh frequencies
+function createSmoothNoise(ctx: AudioContext): AudioBuffer {
+  const bufferSize = ctx.sampleRate * 8 // Longer buffer for smoother loop
+  const buffer = ctx.createBuffer(2, bufferSize, ctx.sampleRate) // Stereo
 
-  if (type === 'brown') {
+  for (let channel = 0; channel < 2; channel++) {
+    const data = buffer.getChannelData(channel)
     let lastOut = 0
+
+    // Extra-smooth brown noise with very gentle filtering
     for (let i = 0; i < bufferSize; i++) {
       const white = Math.random() * 2 - 1
-      data[i] = (lastOut + 0.02 * white) / 1.02
+      // Very low coefficient = very smooth/slow changes
+      data[i] = (lastOut + 0.004 * white) / 1.004
       lastOut = data[i]
-      data[i] *= 3.5
-    }
-  } else {
-    // Pink noise
-    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0
-    for (let i = 0; i < bufferSize; i++) {
-      const white = Math.random() * 2 - 1
-      b0 = 0.99886 * b0 + white * 0.0555179
-      b1 = 0.99332 * b1 + white * 0.0750759
-      b2 = 0.96900 * b2 + white * 0.1538520
-      b3 = 0.86650 * b3 + white * 0.3104856
-      b4 = 0.55000 * b4 + white * 0.5329522
-      b5 = -0.7616 * b5 - white * 0.0168980
-      data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11
-      b6 = white * 0.115926
+      data[i] *= 10 // Boost because it's very quiet
     }
   }
 
   return buffer
 }
 
-// Create simple reverb impulse
-function createReverbImpulse(ctx: AudioContext, duration: number, decay: number): AudioBuffer {
+// Create lush reverb impulse response
+function createLushReverb(ctx: AudioContext, duration: number, decay: number): AudioBuffer {
   const length = ctx.sampleRate * duration
   const buffer = ctx.createBuffer(2, length, ctx.sampleRate)
 
   for (let channel = 0; channel < 2; channel++) {
     const data = buffer.getChannelData(channel)
     for (let i = 0; i < length; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay)
+      // Early reflections + smooth tail
+      const t = i / length
+      const earlyReflections = t < 0.1 ? Math.sin(t * 100) * 0.3 : 0
+      const tail = (Math.random() * 2 - 1) * Math.pow(1 - t, decay)
+      // Add some modulation for richness
+      const modulation = Math.sin(i / ctx.sampleRate * 0.5) * 0.1
+      data[i] = (earlyReflections + tail) * (1 + modulation)
+
+      // Slight stereo variation
+      if (channel === 1) {
+        data[i] *= 0.95 + Math.random() * 0.1
+      }
+    }
+  }
+
+  return buffer
+}
+
+// Create a warmer, longer reverb for space
+function createSpaceReverb(ctx: AudioContext): AudioBuffer {
+  const duration = 6 // 6 second tail
+  const length = ctx.sampleRate * duration
+  const buffer = ctx.createBuffer(2, length, ctx.sampleRate)
+
+  for (let channel = 0; channel < 2; channel++) {
+    const data = buffer.getChannelData(channel)
+    for (let i = 0; i < length; i++) {
+      const t = i / length
+      // Very smooth exponential decay with modulation
+      const envelope = Math.exp(-3 * t) * (1 - t)
+      const noise = Math.random() * 2 - 1
+      // Low-pass filter the noise in the reverb itself
+      data[i] = noise * envelope * 0.5
+    }
+
+    // Simple low-pass on reverb buffer
+    let prev = 0
+    for (let i = 0; i < length; i++) {
+      data[i] = prev * 0.85 + data[i] * 0.15
+      prev = data[i]
     }
   }
 
@@ -99,346 +125,362 @@ function createEngine(ctx: AudioContext): AudioEngine {
   masterGain.gain.value = 0
   masterGain.connect(ctx.destination)
 
-  // === DRY/WET MIX FOR REVERB ===
+  // === REVERB SETUP ===
   const dryGain = ctx.createGain()
-  dryGain.gain.value = 0.7
+  dryGain.gain.value = 0.5
   dryGain.connect(masterGain)
 
+  // Primary reverb (lush, medium)
   const convolver = ctx.createConvolver()
-  convolver.buffer = createReverbImpulse(ctx, 3, 2)
+  convolver.buffer = createLushReverb(ctx, 4, 2.5)
   const reverbGain = ctx.createGain()
-  reverbGain.gain.value = 0.3
+  reverbGain.gain.value = 0.4
   convolver.connect(reverbGain)
   reverbGain.connect(masterGain)
 
-  // === HEARTBEAT ===
-  // Low thump with LFO for rhythm
-  const heartOsc = ctx.createOscillator()
-  heartOsc.type = 'sine'
-  heartOsc.frequency.value = 55
+  // Secondary reverb (vast space)
+  const convolver2 = ctx.createConvolver()
+  convolver2.buffer = createSpaceReverb(ctx)
+  const reverb2Gain = ctx.createGain()
+  reverb2Gain.gain.value = 0.25
+  convolver2.connect(reverb2Gain)
+  reverb2Gain.connect(masterGain)
 
-  const heartGain = ctx.createGain()
-  heartGain.gain.value = 0
+  // === WARM PAD (the main atmospheric sound) ===
+  // Multiple detuned triangle oscillators for warmth
+  const padOscs: OscillatorNode[] = []
+  const padGain = ctx.createGain()
+  padGain.gain.value = 0
 
-  // LFO to create heartbeat rhythm (~70 bpm = 1.17 Hz)
-  const heartLFO = ctx.createOscillator()
-  heartLFO.frequency.value = 1.17
-  const heartLFOGain = ctx.createGain()
-  heartLFOGain.gain.value = 0.15
+  const padFilter = ctx.createBiquadFilter()
+  padFilter.type = 'lowpass'
+  padFilter.frequency.value = 400
+  padFilter.Q.value = 0.5
 
-  heartLFO.connect(heartLFOGain)
-  heartLFOGain.connect(heartGain.gain)
-  heartOsc.connect(heartGain)
-  heartGain.connect(dryGain)
+  // Create 4 detuned oscillators for rich pad sound
+  const padFreqs = [55, 55.2, 54.8, 110] // Slightly detuned + octave
+  padFreqs.forEach((freq, i) => {
+    const osc = ctx.createOscillator()
+    osc.type = 'triangle' // Warmer than sine
+    osc.frequency.value = freq
 
-  // === BREATH/WIND ===
-  const breathNoise = ctx.createBufferSource()
-  breathNoise.buffer = createNoiseBuffer(ctx, 'pink')
-  breathNoise.loop = true
+    // Individual gain for mixing
+    const oscGain = ctx.createGain()
+    oscGain.gain.value = i === 3 ? 0.15 : 0.25 // Octave quieter
 
-  const breathFilter = ctx.createBiquadFilter()
-  breathFilter.type = 'bandpass'
-  breathFilter.frequency.value = 500
-  breathFilter.Q.value = 0.8
+    osc.connect(oscGain)
+    oscGain.connect(padFilter)
+    padOscs.push(osc)
+  })
 
-  const breathGain = ctx.createGain()
-  breathGain.gain.value = 0.1
+  padFilter.connect(padGain)
+  padGain.connect(dryGain)
+  padGain.connect(convolver)
+  padGain.connect(convolver2)
 
-  breathNoise.connect(breathFilter)
-  breathFilter.connect(breathGain)
-  breathGain.connect(dryGain)
-
-  // === MAIN DRONE ===
-  const drone = ctx.createOscillator()
-  drone.type = 'sine'
-  drone.frequency.value = 65
-
-  const droneGain = ctx.createGain()
-  droneGain.gain.value = 0.12
-
-  // Slow LFO for drone "breathing"
-  const droneLFO = ctx.createOscillator()
-  droneLFO.frequency.value = 0.1 // Very slow
-  const droneLFOGain = ctx.createGain()
-  droneLFOGain.gain.value = 5 // Modulate frequency by ±5 Hz
-  droneLFO.connect(droneLFOGain)
-  droneLFOGain.connect(drone.frequency)
-
-  drone.connect(droneGain)
-  droneGain.connect(dryGain)
-  droneGain.connect(convolver) // Also send to reverb
-
-  // === SUB BASS ===
-  const sub = ctx.createOscillator()
-  sub.type = 'sine'
-  sub.frequency.value = 35
+  // === DEEP SUB ===
+  const subOsc = ctx.createOscillator()
+  subOsc.type = 'sine'
+  subOsc.frequency.value = 27.5 // Very low A
 
   const subGain = ctx.createGain()
-  subGain.gain.value = 0.08
+  subGain.gain.value = 0
 
-  sub.connect(subGain)
+  subOsc.connect(subGain)
   subGain.connect(dryGain)
 
+  // === GENTLE WIND ===
+  const windNoise = ctx.createBufferSource()
+  windNoise.buffer = createSmoothNoise(ctx)
+  windNoise.loop = true
+
+  const windFilter = ctx.createBiquadFilter()
+  windFilter.type = 'lowpass'
+  windFilter.frequency.value = 200 // Very low - just a gentle presence
+  windFilter.Q.value = 0.3
+
+  const windGain = ctx.createGain()
+  windGain.gain.value = 0
+
+  windNoise.connect(windFilter)
+  windFilter.connect(windGain)
+  windGain.connect(dryGain)
+  windGain.connect(convolver)
+
+  // === HARMONIC DRONE (musical intervals for depth) ===
+  const droneOscs: OscillatorNode[] = []
+  const droneGain = ctx.createGain()
+  droneGain.gain.value = 0
+
+  const droneFilter = ctx.createBiquadFilter()
+  droneFilter.type = 'lowpass'
+  droneFilter.frequency.value = 600
+  droneFilter.Q.value = 0.7
+
+  // Perfect fifth and octave - naturally harmonious
+  const droneFreqs = [82.4, 123.5, 164.8] // E2, B2, E3 - open fifth harmony
+  droneFreqs.forEach((freq, i) => {
+    const osc = ctx.createOscillator()
+    osc.type = 'sine'
+    osc.frequency.value = freq
+
+    const oscGain = ctx.createGain()
+    oscGain.gain.value = i === 0 ? 0.3 : 0.15 // Root louder
+
+    osc.connect(oscGain)
+    oscGain.connect(droneFilter)
+    droneOscs.push(osc)
+  })
+
+  droneFilter.connect(droneGain)
+  droneGain.connect(dryGain)
+  droneGain.connect(convolver)
+  droneGain.connect(convolver2)
+
   // === SHIMMER (crystalline for inner core) ===
-  const shimmerOsc1 = ctx.createOscillator()
-  shimmerOsc1.type = 'sine'
-  shimmerOsc1.frequency.value = 880
-
-  const shimmerOsc2 = ctx.createOscillator()
-  shimmerOsc2.type = 'sine'
-  shimmerOsc2.frequency.value = 1320 // Perfect fifth above
-
+  const shimmerOscs: OscillatorNode[] = []
   const shimmerGain = ctx.createGain()
   shimmerGain.gain.value = 0
 
-  shimmerOsc1.connect(shimmerGain)
-  shimmerOsc2.connect(shimmerGain)
-  shimmerGain.connect(convolver) // Shimmer goes through reverb
-  shimmerGain.connect(dryGain)
+  const shimmerFilter = ctx.createBiquadFilter()
+  shimmerFilter.type = 'bandpass'
+  shimmerFilter.frequency.value = 2000
+  shimmerFilter.Q.value = 0.5
 
-  // === RUMBLE EVENTS ===
-  const rumbleGain = ctx.createGain()
-  rumbleGain.gain.value = 0
-  rumbleGain.connect(dryGain)
-  rumbleGain.connect(convolver)
+  // High harmonics with slight detuning
+  const shimmerFreqs = [880, 1318.5, 1760, 2217.5] // A5, E6, A6, C#7 - A major spread
+  shimmerFreqs.forEach((freq) => {
+    const osc = ctx.createOscillator()
+    osc.type = 'sine'
+    osc.frequency.value = freq + (Math.random() - 0.5) * 2 // Tiny detune
+
+    const oscGain = ctx.createGain()
+    oscGain.gain.value = 0.08
+
+    osc.connect(oscGain)
+    oscGain.connect(shimmerFilter)
+    shimmerOscs.push(osc)
+  })
+
+  shimmerFilter.connect(shimmerGain)
+  shimmerGain.connect(convolver) // Shimmer only through reverb
+  shimmerGain.connect(convolver2)
 
   return {
     ctx,
     masterGain,
-    heartOsc,
-    heartGain,
-    heartLFO,
-    heartLFOGain,
-    breathNoise,
-    breathFilter,
-    breathGain,
-    drone,
-    droneGain,
-    droneLFO,
-    sub,
+    padOscs,
+    padGain,
+    padFilter,
+    subOsc,
     subGain,
-    shimmerOsc1,
-    shimmerOsc2,
+    windNoise,
+    windFilter,
+    windGain,
+    droneOscs,
+    droneGain,
+    droneFilter,
+    shimmerOscs,
     shimmerGain,
-    rumbleGain,
+    shimmerFilter,
     convolver,
     reverbGain,
     dryGain,
+    convolver2,
+    reverb2Gain,
   }
 }
 
 function startEngine(e: AudioEngine) {
   if (isEngineRunning) return
 
-  e.heartOsc.start()
-  e.heartLFO.start()
-  e.breathNoise.start()
-  e.drone.start()
-  e.droneLFO.start()
-  e.sub.start()
-  e.shimmerOsc1.start()
-  e.shimmerOsc2.start()
+  e.padOscs.forEach(osc => osc.start())
+  e.subOsc.start()
+  e.windNoise.start()
+  e.droneOscs.forEach(osc => osc.start())
+  e.shimmerOscs.forEach(osc => osc.start())
 
   isEngineRunning = true
 }
 
-// Trigger a random rumble event
-function triggerRumble(e: AudioEngine) {
-  if (e.ctx.state === 'closed') return
-
-  const ctx = e.ctx
-  const now = ctx.currentTime
-
-  // Create a one-shot rumble
-  const rumbleOsc = ctx.createOscillator()
-  rumbleOsc.type = 'sine'
-  rumbleOsc.frequency.value = 20 + Math.random() * 20 // 20-40 Hz
-
-  const rumbleEnv = ctx.createGain()
-  rumbleEnv.gain.value = 0
-
-  rumbleOsc.connect(rumbleEnv)
-  rumbleEnv.connect(e.rumbleGain)
-
-  // Envelope: fade in, sustain, fade out
-  const duration = 2 + Math.random() * 3 // 2-5 seconds
-  const attackTime = 0.5
-  const releaseTime = 1
-
-  rumbleEnv.gain.linearRampToValueAtTime(0.15 + Math.random() * 0.1, now + attackTime)
-  rumbleEnv.gain.linearRampToValueAtTime(0.15 + Math.random() * 0.1, now + duration - releaseTime)
-  rumbleEnv.gain.linearRampToValueAtTime(0, now + duration)
-
-  rumbleOsc.start(now)
-  rumbleOsc.stop(now + duration + 0.1)
-}
-
-// Update sound based on progress
+// Update sound based on progress through the journey
 function updateSoundscape(e: AudioEngine, progress: number) {
   const ctx = e.ctx
   if (ctx.state === 'closed') return
 
   const now = ctx.currentTime
-  const ramp = 0.3 // Smooth transitions
+  const ramp = 0.8 // Slow, smooth transitions
 
-  // === PHASES ===
-  // 0.00 - 0.05: Edge (standing, anticipation)
-  // 0.05 - 0.08: Plunge (jumping)
-  // 0.08 - 0.16: Death sequence (heat stroke, consciousness fading)
-  // 0.16 - 0.26: Body continues (crushing, incineration)
-  // 0.26 - 0.47: Long Fall (meditative, vast)
-  // 0.47 - 0.60: Outer Core (liquid metal, alien)
-  // 0.60 - 0.70: Inner Core (crystalline)
-  // 0.70 - 0.82: Center approach (weightless)
-  // 0.82 - 1.00: Yo-yo and arrival (resolution)
+  // === JOURNEY PHASES ===
+  // 0.00 - 0.05: Edge (anticipation, quiet)
+  // 0.05 - 0.08: Plunge (falling begins)
+  // 0.08 - 0.16: Death sequence (fading consciousness)
+  // 0.16 - 0.26: Body continues (transition to vast)
+  // 0.26 - 0.47: Long Fall (meditative, expansive)
+  // 0.47 - 0.60: Outer Core (deeper, more resonant)
+  // 0.60 - 0.70: Inner Core (crystalline shimmer)
+  // 0.70 - 0.82: Center approach (weightless, transcendent)
+  // 0.82 - 1.00: Arrival (resolution, warmth)
 
-  // === HEARTBEAT ===
-  // Strong at start, fades during death (0.08-0.16)
-  let heartVol = 0
-  if (progress < 0.08) {
-    heartVol = 0.15 // Full heartbeat during edge and plunge
-  } else if (progress < 0.16) {
-    // Fade out during death - heartbeat slowing and stopping
-    const deathProgress = (progress - 0.08) / 0.08
-    heartVol = 0.15 * (1 - deathProgress)
-    // Also slow the heartbeat
-    const heartRate = 1.17 * (1 - deathProgress * 0.7) // Slows to 30% of normal
-    e.heartLFO.frequency.linearRampToValueAtTime(heartRate, now + ramp)
-  } else {
-    heartVol = 0 // Dead, no heartbeat
-  }
-  e.heartGain.gain.linearRampToValueAtTime(heartVol, now + ramp)
-
-  // === BREATH/WIND ===
-  // Airy at surface, becomes rumble deeper
-  let breathFreq = 800 - progress * 700 // 800 → 100 Hz
-  let breathQ = 0.5 + progress * 1.5 // Gets more resonant
-  let breathVol = 0.08
-
-  if (progress < 0.08) {
-    // Edge/Plunge: breathy, airy
-    breathFreq = 600 + (1 - progress / 0.08) * 400 // Higher at very start
-    breathVol = 0.12
-  } else if (progress < 0.16) {
-    // Death: breath fading, muffled
-    const deathProgress = (progress - 0.08) / 0.08
-    breathFreq = 400 - deathProgress * 200
-    breathVol = 0.12 * (1 - deathProgress * 0.5)
-    breathQ = 2 + deathProgress * 3 // More muffled
-  } else if (progress > 0.26 && progress < 0.47) {
-    // Long fall: occasional gusts (handled by base + random)
-    breathVol = 0.06
-  }
-
-  e.breathFilter.frequency.linearRampToValueAtTime(breathFreq, now + ramp)
-  e.breathFilter.Q.linearRampToValueAtTime(breathQ, now + ramp)
-  e.breathGain.gain.linearRampToValueAtTime(breathVol, now + ramp)
-
-  // === DRONE ===
-  // Pitch drops as we descend
-  let droneFreq = 80 - progress * 50 // 80 → 30 Hz
-  let droneVol = 0.1
+  // === WARM PAD ===
+  // The main atmospheric foundation
+  let padVol = 0
+  let padFilterFreq = 400
 
   if (progress < 0.05) {
-    // Edge: quiet anticipation
-    droneVol = 0.05
-    droneFreq = 70
+    // Edge: quiet anticipation, pad barely there
+    padVol = 0.03
+    padFilterFreq = 200
+  } else if (progress < 0.08) {
+    // Plunge: pad swells
+    const t = (progress - 0.05) / 0.03
+    padVol = 0.03 + t * 0.12
+    padFilterFreq = 200 + t * 300
   } else if (progress < 0.16) {
-    // Death: distorted, unstable
-    droneVol = 0.12
-  } else if (progress > 0.47 && progress < 0.60) {
-    // Outer core: metallic character
-    droneVol = 0.15
-  } else if (progress > 0.70) {
-    // Center: warm, peaceful
-    droneFreq = 55 // Nice low A
-    droneVol = 0.12
+    // Death: pad sustains then slowly fades
+    const t = (progress - 0.08) / 0.08
+    padVol = 0.15 * (1 - t * 0.3)
+    padFilterFreq = 500 - t * 200
+  } else if (progress < 0.26) {
+    // Body continues: pad rebuilds
+    const t = (progress - 0.16) / 0.10
+    padVol = 0.10 + t * 0.08
+    padFilterFreq = 300 + t * 200
+  } else if (progress < 0.47) {
+    // Long fall: full atmospheric pad
+    padVol = 0.18
+    padFilterFreq = 500
+  } else if (progress < 0.60) {
+    // Outer core: slightly brighter, more present
+    padVol = 0.20
+    padFilterFreq = 600
+  } else if (progress < 0.82) {
+    // Inner core to center: warm and full
+    padVol = 0.22
+    padFilterFreq = 700
+  } else {
+    // Arrival: gentle fade
+    const t = (progress - 0.82) / 0.18
+    padVol = 0.22 * (1 - t * 0.5)
+    padFilterFreq = 700 - t * 200
   }
 
-  e.drone.frequency.linearRampToValueAtTime(droneFreq, now + ramp)
-  e.droneGain.gain.linearRampToValueAtTime(droneVol, now + ramp)
+  e.padGain.gain.linearRampToValueAtTime(padVol, now + ramp)
+  e.padFilter.frequency.linearRampToValueAtTime(padFilterFreq, now + ramp)
 
-  // Drone LFO speed: faster during tense moments
-  let lfoSpeed = 0.08
-  if (progress < 0.08) lfoSpeed = 0.15 // Tense at edge
-  if (progress > 0.16 && progress < 0.26) lfoSpeed = 0.05 // Very slow during body falling
-  if (progress > 0.70) lfoSpeed = 0.03 // Almost still at center
-  e.droneLFO.frequency.linearRampToValueAtTime(lfoSpeed, now + ramp)
+  // Slowly evolve pad frequencies for movement
+  const padBaseFreq = 55 - progress * 15 // Gets slightly lower as we descend
+  e.padOscs[0].frequency.linearRampToValueAtTime(padBaseFreq, now + ramp)
+  e.padOscs[1].frequency.linearRampToValueAtTime(padBaseFreq * 1.003, now + ramp)
+  e.padOscs[2].frequency.linearRampToValueAtTime(padBaseFreq * 0.997, now + ramp)
+  e.padOscs[3].frequency.linearRampToValueAtTime(padBaseFreq * 2, now + ramp)
 
-  // === SUB BASS ===
-  // Grows stronger as we go deeper
-  let subFreq = 40 - progress * 15 // 40 → 25 Hz
-  let subVol = 0.05 + progress * 0.15 // Grows louder
+  // === DEEP SUB ===
+  let subVol = 0
+  let subFreq = 27.5
 
-  if (progress < 0.16) {
-    subVol = 0.03 // Quiet during surface/death
+  if (progress > 0.16) {
+    // Sub comes in after death, felt more than heard
+    const t = Math.min(1, (progress - 0.16) / 0.10)
+    subVol = 0.12 * t
+  }
+  if (progress > 0.47) {
+    // Deeper in outer/inner core
+    subVol = 0.15
+    subFreq = 22 // Even lower
+  }
+  if (progress > 0.82) {
+    // Fade out at end
+    const t = (progress - 0.82) / 0.18
+    subVol = 0.15 * (1 - t)
   }
 
-  e.sub.frequency.linearRampToValueAtTime(subFreq, now + ramp)
   e.subGain.gain.linearRampToValueAtTime(subVol, now + ramp)
+  e.subOsc.frequency.linearRampToValueAtTime(subFreq, now + ramp)
+
+  // === GENTLE WIND ===
+  let windVol = 0
+  let windFilterFreq = 200
+
+  if (progress < 0.08) {
+    // Edge/plunge: slight breeze
+    windVol = 0.02 + progress * 0.1
+    windFilterFreq = 150 + progress * 500
+  } else if (progress < 0.16) {
+    // Death: wind fades
+    const t = (progress - 0.08) / 0.08
+    windVol = 0.03 * (1 - t)
+  } else if (progress > 0.26 && progress < 0.47) {
+    // Long fall: gentle presence
+    windVol = 0.015
+    windFilterFreq = 120
+  }
+
+  e.windGain.gain.linearRampToValueAtTime(windVol, now + ramp)
+  e.windFilter.frequency.linearRampToValueAtTime(windFilterFreq, now + ramp)
+
+  // === HARMONIC DRONE ===
+  let droneVol = 0
+  let droneFilterFreq = 500
+
+  if (progress > 0.20 && progress < 0.82) {
+    // Active during long fall through inner core
+    const fadeIn = Math.min(1, (progress - 0.20) / 0.06)
+    const fadeOut = progress > 0.75 ? (0.82 - progress) / 0.07 : 1
+    droneVol = 0.08 * fadeIn * fadeOut
+
+    // Filter opens up as we go deeper
+    droneFilterFreq = 400 + (progress - 0.20) * 500
+  }
+
+  e.droneGain.gain.linearRampToValueAtTime(droneVol, now + ramp)
+  e.droneFilter.frequency.linearRampToValueAtTime(droneFilterFreq, now + ramp)
+
+  // Evolve drone pitches - descending as we fall
+  const dronePitchMod = 1 - progress * 0.15
+  e.droneOscs[0].frequency.linearRampToValueAtTime(82.4 * dronePitchMod, now + ramp * 2)
+  e.droneOscs[1].frequency.linearRampToValueAtTime(123.5 * dronePitchMod, now + ramp * 2)
+  e.droneOscs[2].frequency.linearRampToValueAtTime(164.8 * dronePitchMod, now + ramp * 2)
 
   // === SHIMMER ===
-  // Only in inner core and center (0.60 - 1.00)
   let shimmerVol = 0
-  if (progress > 0.55 && progress < 0.82) {
-    // Inner core: crystalline shimmer fades in and out
-    const coreProgress = (progress - 0.55) / 0.27
-    shimmerVol = Math.sin(coreProgress * Math.PI) * 0.04 // Peaks in middle
 
-    // Shimmer frequencies based on depth
-    const baseFreq = 440 + (1 - coreProgress) * 220
-    e.shimmerOsc1.frequency.linearRampToValueAtTime(baseFreq, now + ramp)
-    e.shimmerOsc2.frequency.linearRampToValueAtTime(baseFreq * 1.5, now + ramp)
-  } else if (progress > 0.82) {
-    // Center/Yo-yo: gentle sustained shimmer
-    shimmerVol = 0.02
-    e.shimmerOsc1.frequency.linearRampToValueAtTime(440, now + ramp)
-    e.shimmerOsc2.frequency.linearRampToValueAtTime(660, now + ramp)
+  if (progress > 0.55 && progress < 0.85) {
+    // Inner core and center: crystalline shimmer
+    const fadeIn = Math.min(1, (progress - 0.55) / 0.05)
+    const fadeOut = progress > 0.78 ? (0.85 - progress) / 0.07 : 1
+    shimmerVol = 0.03 * fadeIn * fadeOut
   }
+
   e.shimmerGain.gain.linearRampToValueAtTime(shimmerVol, now + ramp)
 
+  // Shimmer frequency drift for sparkle effect
+  const shimmerMod = 1 + Math.sin(now * 0.3) * 0.02
+  e.shimmerOscs.forEach((osc, i) => {
+    const baseFreqs = [880, 1318.5, 1760, 2217.5]
+    osc.frequency.linearRampToValueAtTime(baseFreqs[i] * shimmerMod, now + 0.1)
+  })
+
   // === REVERB MIX ===
-  // More reverb as we go deeper (more cavernous)
-  const reverbAmount = 0.2 + progress * 0.4 // 0.2 → 0.6
-  e.reverbGain.gain.linearRampToValueAtTime(reverbAmount, now + ramp)
-  e.dryGain.gain.linearRampToValueAtTime(1 - reverbAmount * 0.5, now + ramp)
+  // More cavernous as we descend
+  let reverbAmount = 0.3 + progress * 0.4
+  let spaceAmount = 0.15 + progress * 0.35
 
-  // === RUMBLE EVENTS ===
-  // During long fall (0.26 - 0.47), trigger occasional rumbles
-  e.rumbleGain.gain.linearRampToValueAtTime(
-    (progress > 0.20 && progress < 0.55) ? 1 : 0,
-    now + ramp
-  )
-
-  // === FINAL FADE OUT ===
-  // Fade everything to silence at the very end (last 5%)
-  if (progress > 0.95) {
-    const fadeProgress = (progress - 0.95) / 0.05 // 0 → 1 over last 5%
-    const fadeMultiplier = 1 - fadeProgress
-    e.masterGain.gain.linearRampToValueAtTime(0.7 * fadeMultiplier, now + ramp)
+  if (progress > 0.82) {
+    // At center: maximum space
+    reverbAmount = 0.7
+    spaceAmount = 0.5
   }
-}
 
-// Start/stop rumble events based on progress
-function manageRumbleEvents(e: AudioEngine, progress: number, isPlaying: boolean) {
-  const inLongFall = progress > 0.20 && progress < 0.55
+  e.reverbGain.gain.linearRampToValueAtTime(reverbAmount, now + ramp)
+  e.reverb2Gain.gain.linearRampToValueAtTime(spaceAmount, now + ramp)
+  e.dryGain.gain.linearRampToValueAtTime(0.6 - progress * 0.2, now + ramp)
 
-  if (inLongFall && isPlaying && !rumbleInterval) {
-    // Start random rumbles every 4-8 seconds
-    const scheduleNext = () => {
-      const delay = 4000 + Math.random() * 4000
-      rumbleInterval = window.setTimeout(() => {
-        if (engine && isEngineRunning) {
-          triggerRumble(e)
-          scheduleNext()
-        }
-      }, delay)
-    }
-    triggerRumble(e) // Immediate first rumble
-    scheduleNext()
-  } else if ((!inLongFall || !isPlaying) && rumbleInterval) {
-    clearTimeout(rumbleInterval)
-    rumbleInterval = null
+  // === FINAL FADE ===
+  if (progress > 0.95) {
+    const fadeProgress = (progress - 0.95) / 0.05
+    const fadeMultiplier = 1 - fadeProgress
+    e.masterGain.gain.linearRampToValueAtTime(0.6 * fadeMultiplier, now + ramp)
   }
 }
 
@@ -446,7 +488,6 @@ export function useAudio(progress: number, _duration: number, isPlaying: boolean
   const [isInitialized, setIsInitialized] = useState(false)
   const engineRef = useRef<AudioEngine | null>(null)
   const enabledRef = useRef(true)
-  const lastProgressRef = useRef(0)
 
   const initAudio = useCallback(() => {
     if (engine && engine.ctx.state !== 'closed') {
@@ -472,8 +513,6 @@ export function useAudio(progress: number, _duration: number, isPlaying: boolean
     if (e.ctx.state === 'closed') return
 
     updateSoundscape(e, progress)
-    manageRumbleEvents(e, progress, isPlaying)
-    lastProgressRef.current = progress
   }, [progress, isPlaying])
 
   // Handle play/pause
@@ -487,14 +526,11 @@ export function useAudio(progress: number, _duration: number, isPlaying: boolean
         e.ctx.resume()
       }
       startEngine(e)
-      e.masterGain.gain.linearRampToValueAtTime(0.7, e.ctx.currentTime + 1)
+      // Gentle fade in
+      e.masterGain.gain.linearRampToValueAtTime(0.6, e.ctx.currentTime + 2)
     } else {
-      e.masterGain.gain.linearRampToValueAtTime(0, e.ctx.currentTime + 0.5)
-      // Stop rumbles when paused
-      if (rumbleInterval) {
-        clearTimeout(rumbleInterval)
-        rumbleInterval = null
-      }
+      // Gentle fade out
+      e.masterGain.gain.linearRampToValueAtTime(0, e.ctx.currentTime + 1)
     }
   }, [isPlaying])
 
@@ -504,18 +540,14 @@ export function useAudio(progress: number, _duration: number, isPlaying: boolean
     if (!e) return
 
     if (enabled) {
-      e.masterGain.gain.linearRampToValueAtTime(0.7, e.ctx.currentTime + 0.5)
+      e.masterGain.gain.linearRampToValueAtTime(0.6, e.ctx.currentTime + 1)
     } else {
-      e.masterGain.gain.linearRampToValueAtTime(0, e.ctx.currentTime + 0.3)
+      e.masterGain.gain.linearRampToValueAtTime(0, e.ctx.currentTime + 0.5)
     }
   }, [])
 
   useEffect(() => {
     return () => {
-      if (rumbleInterval) {
-        clearTimeout(rumbleInterval)
-        rumbleInterval = null
-      }
       engineRef.current = null
     }
   }, [])
