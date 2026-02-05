@@ -1,11 +1,20 @@
 import { useMemo } from 'react'
 import { useJourney } from '../hooks/useJourney'
 import { useLanguage } from '../hooks/useLanguage'
+import { useSpeech } from '../hooks/useSpeech'
 import { NarrativeStyle } from '../data/content'
+
+const SPEECH_LANG_CODES: Record<string, string> = {
+  en: 'en-US',
+  de: 'de-DE',
+  es: 'es-ES',
+  zh: 'zh-CN',
+  ja: 'ja-JP',
+}
 
 export default function Narrative() {
   const { progress, duration } = useJourney()
-  const { narrative } = useLanguage()
+  const { narrative, language, voiceEnabled } = useLanguage()
   const currentTime = progress * duration
 
   // Find current narrative block
@@ -14,6 +23,14 @@ export default function Narrative() {
       currentTime >= n.startTime && currentTime <= n.endTime
     )
   }, [currentTime, narrative])
+
+  // Voice narration - hook must be called before early return
+  useSpeech({
+    text: currentNarrative?.text ?? null,
+    enabled: voiceEnabled,
+    lang: SPEECH_LANG_CODES[language] || 'en-US',
+    style: currentNarrative?.style,
+  })
 
   if (!currentNarrative) return null
 

@@ -9,7 +9,7 @@ interface LanguageSelectorProps {
 export function LanguageSelector({ variant = 'minimal', className = '' }: LanguageSelectorProps) {
   const { language, setLanguage } = useLanguage()
 
-  const languages: Language[] = ['en', 'de', 'es']
+  const languages: Language[] = ['en', 'de', 'es', 'zh', 'ja']
 
   if (variant === 'full') {
     return (

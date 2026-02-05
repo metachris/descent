@@ -8,6 +8,8 @@ interface LanguageState {
   language: Language
   setLanguage: (lang: Language) => void
   narrative: NarrativeEntry[]
+  voiceEnabled: boolean
+  setVoiceEnabled: (enabled: boolean) => void
 }
 
 // Check URL for language parameter
@@ -27,6 +29,7 @@ export const useLanguage = create<LanguageState>()(
     (set) => ({
       language: getInitialLanguage(),
       narrative: getNarrative(getInitialLanguage()),
+      voiceEnabled: false,
       setLanguage: (lang: Language) => {
         // Update URL without reload
         if (typeof window !== 'undefined') {
@@ -36,6 +39,7 @@ export const useLanguage = create<LanguageState>()(
         }
         set({ language: lang, narrative: getNarrative(lang) })
       },
+      setVoiceEnabled: (enabled: boolean) => set({ voiceEnabled: enabled }),
     }),
     {
       name: 'descent-language',
