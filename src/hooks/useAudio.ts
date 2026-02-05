@@ -493,18 +493,23 @@ function updateSoundscape(e: AudioEngine, progress: number) {
     padVol = 0.18
     padFilterFreq = 500
   } else if (progress < 0.60) {
-    // Outer core: slightly brighter, more present
-    padVol = 0.20
-    padFilterFreq = 600
-  } else if (progress < 0.82) {
-    // Inner core to center: warm and full
-    padVol = 0.22
-    padFilterFreq = 700
+    // Outer core: warm presence
+    padVol = 0.16
+    padFilterFreq = 450
+  } else if (progress < 0.75) {
+    // Inner core: gentle, peaceful
+    padVol = 0.14
+    padFilterFreq = 350
+  } else if (progress < 0.85) {
+    // Approaching center: becoming serene
+    const t = (progress - 0.75) / 0.10
+    padVol = 0.14 * (1 - t * 0.3)
+    padFilterFreq = 350 - t * 100
   } else {
-    // Arrival: gentle fade
-    const t = (progress - 0.82) / 0.18
-    padVol = 0.22 * (1 - t * 0.5)
-    padFilterFreq = 700 - t * 200
+    // Arrival: soft, quiet, peaceful fade
+    const t = (progress - 0.85) / 0.15
+    padVol = 0.10 * (1 - t * 0.8)
+    padFilterFreq = 250 - t * 100
   }
 
   e.padGain.gain.linearRampToValueAtTime(padVol, now + ramp)
@@ -521,20 +526,22 @@ function updateSoundscape(e: AudioEngine, progress: number) {
   let subVol = 0
   let subFreq = 27.5
 
-  if (progress > 0.16) {
+  if (progress > 0.16 && progress < 0.75) {
     // Sub comes in after death, felt more than heard
     const t = Math.min(1, (progress - 0.16) / 0.10)
-    subVol = 0.12 * t
-  }
-  if (progress > 0.47) {
-    // Deeper in outer/inner core
-    subVol = 0.15
-    subFreq = 22 // Even lower
-  }
-  if (progress > 0.82) {
-    // Fade out at end
-    const t = (progress - 0.82) / 0.18
-    subVol = 0.15 * (1 - t)
+    subVol = 0.08 * t // Reduced from 0.12
+
+    if (progress > 0.47) {
+      // Deeper in outer core
+      subVol = 0.10 // Reduced from 0.15
+      subFreq = 25
+    }
+
+    // Start fading at 0.65
+    if (progress > 0.65) {
+      const fadeT = (progress - 0.65) / 0.10
+      subVol = 0.10 * (1 - fadeT)
+    }
   }
 
   e.subGain.gain.linearRampToValueAtTime(subVol, now + ramp)
@@ -563,16 +570,16 @@ function updateSoundscape(e: AudioEngine, progress: number) {
 
   // === HARMONIC DRONE ===
   let droneVol = 0
-  let droneFilterFreq = 500
+  let droneFilterFreq = 400
 
-  if (progress > 0.20 && progress < 0.82) {
-    // Active during long fall through inner core
-    const fadeIn = Math.min(1, (progress - 0.20) / 0.06)
-    const fadeOut = progress > 0.75 ? (0.82 - progress) / 0.07 : 1
-    droneVol = 0.08 * fadeIn * fadeOut
+  if (progress > 0.20 && progress < 0.70) {
+    // Active during long fall, fades before inner core
+    const fadeIn = Math.min(1, (progress - 0.20) / 0.08)
+    const fadeOut = progress > 0.60 ? (0.70 - progress) / 0.10 : 1
+    droneVol = 0.06 * fadeIn * fadeOut // Reduced from 0.08
 
-    // Filter opens up as we go deeper
-    droneFilterFreq = 400 + (progress - 0.20) * 500
+    // Filter stays warm
+    droneFilterFreq = 350 + (progress - 0.20) * 200
   }
 
   e.droneGain.gain.linearRampToValueAtTime(droneVol, now + ramp)
@@ -585,13 +592,14 @@ function updateSoundscape(e: AudioEngine, progress: number) {
   e.droneOscs[2].frequency.linearRampToValueAtTime(164.8 * dronePitchMod, now + ramp * 2)
 
   // === SHIMMER ===
+  // Very subtle crystalline texture - reduced to avoid alarm-like sound
   let shimmerVol = 0
 
-  if (progress > 0.55 && progress < 0.85) {
-    // Inner core and center: crystalline shimmer
-    const fadeIn = Math.min(1, (progress - 0.55) / 0.05)
-    const fadeOut = progress > 0.78 ? (0.85 - progress) / 0.07 : 1
-    shimmerVol = 0.03 * fadeIn * fadeOut
+  if (progress > 0.55 && progress < 0.75) {
+    // Inner core only: gentle crystalline shimmer
+    const fadeIn = Math.min(1, (progress - 0.55) / 0.08)
+    const fadeOut = progress > 0.68 ? (0.75 - progress) / 0.07 : 1
+    shimmerVol = 0.015 * fadeIn * fadeOut // Reduced from 0.03
   }
 
   e.shimmerGain.gain.linearRampToValueAtTime(shimmerVol, now + ramp)
@@ -635,23 +643,24 @@ function updateSoundscape(e: AudioEngine, progress: number) {
     drumVol = 0.08
     drumTempo = 0.35
     drumIntensity = 0.3
-  } else if (progress < 0.60) {
-    // Outer core: building intensity
-    const t = (progress - 0.47) / 0.13
-    drumVol = 0.08 + t * 0.07
-    drumTempo = 0.35 + t * 0.2
-    drumIntensity = 0.3 + t * 0.3
-  } else if (progress < 0.75) {
-    // Inner core: peak intensity
-    drumVol = 0.15
-    drumTempo = 0.55
-    drumIntensity = 0.6
-  } else if (progress < 0.85) {
-    // Approaching center: slowing, fading
-    const t = (progress - 0.75) / 0.10
-    drumVol = 0.15 * (1 - t * 0.7)
-    drumTempo = 0.55 - t * 0.25
-    drumIntensity = 0.6 * (1 - t)
+  } else if (progress < 0.55) {
+    // Outer core: gentle building
+    const t = (progress - 0.47) / 0.08
+    drumVol = 0.06 + t * 0.04
+    drumTempo = 0.35 + t * 0.1
+    drumIntensity = 0.25 + t * 0.15
+  } else if (progress < 0.70) {
+    // Inner core: moderate, starting to calm
+    const t = (progress - 0.55) / 0.15
+    drumVol = 0.10 * (1 - t * 0.3)
+    drumTempo = 0.45 - t * 0.1
+    drumIntensity = 0.4 * (1 - t * 0.5)
+  } else if (progress < 0.80) {
+    // Approaching center: fading to peace
+    const t = (progress - 0.70) / 0.10
+    drumVol = 0.07 * (1 - t)
+    drumTempo = 0.35 - t * 0.2
+    drumIntensity = 0.2 * (1 - t)
   } else {
     // Center: silence, weightlessness
     drumVol = 0
