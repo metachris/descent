@@ -681,8 +681,14 @@ function updateSoundscape(e: AudioEngine, progress: number) {
   e.dryGain.gain.linearRampToValueAtTime(0.6 - progress * 0.2, now + ramp)
 
   // === FINAL FADE ===
-  // Note: This is handled relative to current master gain, not absolute 0.6
-  // The actual volume level is controlled by the volume slider
+  // Fade out smoothly before end screen appears (end screen shows at 99%)
+  if (progress > 0.92) {
+    const fadeProgress = (progress - 0.92) / 0.07 // Fade from 92% to 99%
+    const fadeMultiplier = Math.pow(Math.max(0, 1 - fadeProgress), 2) // Exponential fade for smoothness
+    // Fade master gain toward zero (0.01 to avoid audio artifacts)
+    const targetGain = Math.max(0.001, fadeMultiplier)
+    e.masterGain.gain.setTargetAtTime(targetGain, now, 0.3)
+  }
 }
 
 // Get saved volume from localStorage
