@@ -5,10 +5,10 @@ import type { NarrativeStyle } from '../data/content'
 
 // Speech settings per narrative style
 const STYLE_SETTINGS: Record<NarrativeStyle, { rate: number; pitch: number; volume: number }> = {
-  normal: { rate: 0.85, pitch: 1.0, volume: 0.8 },
-  dramatic: { rate: 0.75, pitch: 0.9, volume: 0.9 },  // Slower, deeper, louder
-  whisper: { rate: 0.9, pitch: 1.1, volume: 0.6 },    // Slightly faster, higher, quieter
-  data: { rate: 0.95, pitch: 0.85, volume: 0.7 },     // More measured, robotic feel fits here
+  normal: { rate: 0.85, pitch: 1.0, volume: 0.45 },
+  dramatic: { rate: 0.78, pitch: 0.97, volume: 0.5 },  // Slightly slower, barely deeper
+  whisper: { rate: 0.88, pitch: 1.02, volume: 0.38 },  // Slightly softer
+  data: { rate: 0.9, pitch: 0.98, volume: 0.42 },      // Slightly more measured
 }
 
 // Common female voice name patterns

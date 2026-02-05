@@ -49,9 +49,35 @@ Instead, Descent plays like a video. It auto-plays with a timeline scrubber. You
 - **[React 18](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)** — Component architecture for the UI layers
 - **[Vite](https://vitejs.dev/)** — Fast builds, great HMR, no configuration headaches
 - **[Tailwind CSS](https://tailwindcss.com/)** — Rapid styling without context-switching
-- **[Zustand](https://zustand-demo.pmnd.rs/)** — Minimal state management for playback state
+- **[Zustand](https://zustand-demo.pmnd.rs/)** — Minimal state management for playback, language, and voice preferences (with localStorage persistence)
+- **[Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)** — Procedural audio synthesis, no audio files
+- **[Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API)** — Voice narration with style-aware parameters
+- **[GitHub Actions](https://github.com/features/actions)** — Automated deployment to GitHub Pages
 
 No 3D libraries. No [WebGL](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API). The visuals are CSS gradients, layered divs, and some canvas work for particles. This keeps it fast and accessible—no GPU requirements, works on any device.
+
+### Six Languages
+
+Descent is fully translated into **six languages**: English, German, Spanish, Chinese, Japanese, and Polish. The translations aren't just literal—they're crafted to feel poetic in each language.
+
+Japanese drops the explicit subject ("you") for a more literary feel: 「縁に立つ。」instead of 「あなたは縁に立っている。」 Chinese uses classical parallel structures: 「骨化为灰，肉化为尘。」("Bone becomes ash, flesh becomes dust.")
+
+The language selector is available on the intro screen and in the playback controls. Your preference persists across sessions.
+
+### Voice Narration
+
+The narrative can be spoken aloud using the browser's [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API). But text-to-speech for poetry is tricky—robotic voices kill the mood.
+
+The solution: **style-aware speech parameters**. Each narrative style (normal, dramatic, whisper, data) gets different rate, pitch, and volume settings:
+
+| Style | Rate | Pitch | Feel |
+|-------|------|-------|------|
+| Normal | 0.85 | 1.0 | Natural storytelling |
+| Dramatic | 0.75 | 0.9 | Slower, deeper |
+| Whisper | 0.9 | 1.1 | Lighter, softer |
+| Data | 0.95 | 0.85 | Measured, factual |
+
+The voice selector auto-picks female voices when available (they tend to sound warmer for narrative), but users can choose any voice their system offers. Neural/natural voices are prioritized over robotic ones.
 
 ### Procedural Audio
 
@@ -61,9 +87,10 @@ The sound design is entirely procedural—no audio files. The [Web Audio API](ht
 - **Harmonic drone**: Perfect fifth intervals (E-B-E) that slowly descend as you fall
 - **Gentle wind**: Ultra-smooth brown noise, heavily filtered
 - **Crystalline shimmer**: High harmonics that fade in during the inner core
+- **Light percussion**: A heartbeat-like pulse that builds through the outer core and fades to silence at the center
 - **Double reverb**: 4-second and 6-second [convolution reverbs](https://en.wikipedia.org/wiki/Convolution_reverb) for depth
 
-The soundscape evolves with your progress. It swells during the plunge, fades during death, becomes vast and meditative during the long fall, and reaches maximum reverb at the center. No sudden changes—everything crossfades over 0.8 seconds or more.
+The soundscape evolves with your progress. It swells during the plunge, fades during death, becomes vast and meditative during the long fall, and reaches maximum reverb at the center. The ending is deliberately serene—all intensity fades away, leaving just a soft warm pad that dissolves into silence. No sudden changes—everything crossfades smoothly.
 
 ## Lessons Learned
 
@@ -81,6 +108,10 @@ Some things Claude Code handled particularly well:
 - Generating the procedural audio system from a description of the desired atmosphere
 - Iterating on narrative text with an understanding of emotional beats
 - Suggesting technical approaches (animation-based vs. scroll-based)
+- Translating the narrative into six languages while maintaining poetic quality
+- Building the voice narration system with style-aware speech parameters
+- Adding light percussion that builds and fades with the emotional arc
+- Fine-tuning the ending to feel serene rather than abrupt
 
 The collaboration felt less like using a tool and more like working with someone who understood both the code and the creative intent.
 
@@ -88,9 +119,14 @@ The collaboration felt less like using a tool and more like working with someone
 
 Descent is live at [descent.earth](https://descent.earth). Put on headphones, go fullscreen, and fall.
 
+A few things to try:
+- **Enable voice narration** (speech bubble icon) to hear the narrative spoken aloud
+- **Switch languages** to experience the journey in German, Spanish, Chinese, Japanese, or Polish
+- **Adjust the volume** (hover over the speaker icon) to find the right level for the procedural audio
+
 The experience succeeds if you say "this made me feel something." That was always the goal—not to teach, but to evoke. To make the incomprehensible scale of our planet feel, for 3.5 minutes, almost comprehensible.
 
-6,371 kilometers. One week. One journey.
+6,371 kilometers. One week. One journey. Six languages.
 
 ---
 
