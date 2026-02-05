@@ -10,7 +10,8 @@ export default function Timeline() {
   const { voiceEnabled, setVoiceEnabled } = useLanguage()
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
-  const { initAudio, setEnabled } = useAudio(progress, duration, isPlaying && !isMuted)
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false)
+  const { initAudio, setEnabled, volume, setVolume } = useAudio(progress, duration, isPlaying && !isMuted)
 
   // Initialize audio on mount (user has already interacted via Start button)
   useEffect(() => {
@@ -108,22 +109,75 @@ export default function Timeline() {
 
             {voiceEnabled && <VoiceSelector />}
 
-            <button
-              onClick={toggleMute}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-              title={isMuted ? 'Unmute' : 'Mute'}
+            {/* Volume control */}
+            <div
+              className="relative flex items-center"
+              onMouseEnter={() => setShowVolumeSlider(true)}
+              onMouseLeave={() => setShowVolumeSlider(false)}
             >
-              {isMuted ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                </svg>
-              )}
-            </button>
+              <button
+                onClick={toggleMute}
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                title={isMuted ? 'Unmute' : 'Mute'}
+              >
+                {isMuted || volume === 0 ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                  </svg>
+                ) : volume < 0.5 ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                  </svg>
+                )}
+              </button>
+
+              {/* Volume slider - appears on hover */}
+              <div
+                className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 rounded-lg border border-white/20 transition-all ${
+                  showVolumeSlider ? 'opacity-100 visible' : 'opacity-0 invisible'
+                }`}
+              >
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={isMuted ? 0 : volume}
+                  onChange={(e) => {
+                    const newVolume = parseFloat(e.target.value)
+                    setVolume(newVolume)
+                    if (newVolume > 0 && isMuted) {
+                      setIsMuted(false)
+                      setEnabled(true)
+                    }
+                  }}
+                  className="w-24 h-1 appearance-none bg-white/20 rounded-full cursor-pointer
+                    [&::-webkit-slider-thumb]:appearance-none
+                    [&::-webkit-slider-thumb]:w-3
+                    [&::-webkit-slider-thumb]:h-3
+                    [&::-webkit-slider-thumb]:rounded-full
+                    [&::-webkit-slider-thumb]:bg-white
+                    [&::-webkit-slider-thumb]:cursor-pointer
+                    [&::-moz-range-thumb]:w-3
+                    [&::-moz-range-thumb]:h-3
+                    [&::-moz-range-thumb]:rounded-full
+                    [&::-moz-range-thumb]:bg-white
+                    [&::-moz-range-thumb]:border-0
+                    [&::-moz-range-thumb]:cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, rgba(251, 146, 60, 0.8) 0%, rgba(251, 146, 60, 0.8) ${(isMuted ? 0 : volume) * 100}%, rgba(255,255,255,0.2) ${(isMuted ? 0 : volume) * 100}%, rgba(255,255,255,0.2) 100%)`
+                  }}
+                />
+                <div className="text-xs text-white/50 text-center mt-1">
+                  {Math.round((isMuted ? 0 : volume) * 100)}%
+                </div>
+              </div>
+            </div>
 
             <button
               onClick={toggleFullscreen}

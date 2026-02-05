@@ -10,6 +10,7 @@ const SPEECH_LANG_CODES: Record<string, string> = {
   es: 'es-ES',
   zh: 'zh-CN',
   ja: 'ja-JP',
+  pl: 'pl-PL',
 }
 
 export default function Narrative() {

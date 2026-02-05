@@ -8,6 +8,7 @@ const LANG_CODES: Record<string, string> = {
   es: 'es',
   zh: 'zh',
   ja: 'ja',
+  pl: 'pl',
 }
 
 export function VoiceSelector() {

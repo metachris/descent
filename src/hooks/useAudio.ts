@@ -477,17 +477,23 @@ function updateSoundscape(e: AudioEngine, progress: number) {
   e.dryGain.gain.linearRampToValueAtTime(0.6 - progress * 0.2, now + ramp)
 
   // === FINAL FADE ===
-  if (progress > 0.95) {
-    const fadeProgress = (progress - 0.95) / 0.05
-    const fadeMultiplier = 1 - fadeProgress
-    e.masterGain.gain.linearRampToValueAtTime(0.6 * fadeMultiplier, now + ramp)
-  }
+  // Note: This is handled relative to current master gain, not absolute 0.6
+  // The actual volume level is controlled by the volume slider
+}
+
+// Get saved volume from localStorage
+function getSavedVolume(): number {
+  if (typeof window === 'undefined') return 0.8
+  const saved = localStorage.getItem('descent-volume')
+  return saved ? parseFloat(saved) : 0.8
 }
 
 export function useAudio(progress: number, _duration: number, isPlaying: boolean) {
   const [isInitialized, setIsInitialized] = useState(false)
+  const [volume, setVolumeState] = useState(getSavedVolume)
   const engineRef = useRef<AudioEngine | null>(null)
   const enabledRef = useRef(true)
+  const volumeRef = useRef(volume)
 
   const initAudio = useCallback(() => {
     if (engine && engine.ctx.state !== 'closed') {
@@ -526,8 +532,8 @@ export function useAudio(progress: number, _duration: number, isPlaying: boolean
         e.ctx.resume()
       }
       startEngine(e)
-      // Gentle fade in
-      e.masterGain.gain.linearRampToValueAtTime(0.6, e.ctx.currentTime + 2)
+      // Gentle fade in to current volume
+      e.masterGain.gain.linearRampToValueAtTime(volumeRef.current, e.ctx.currentTime + 2)
     } else {
       // Gentle fade out
       e.masterGain.gain.linearRampToValueAtTime(0, e.ctx.currentTime + 1)
@@ -540,10 +546,22 @@ export function useAudio(progress: number, _duration: number, isPlaying: boolean
     if (!e) return
 
     if (enabled) {
-      e.masterGain.gain.linearRampToValueAtTime(0.6, e.ctx.currentTime + 1)
+      e.masterGain.gain.linearRampToValueAtTime(volumeRef.current, e.ctx.currentTime + 1)
     } else {
       e.masterGain.gain.linearRampToValueAtTime(0, e.ctx.currentTime + 0.5)
     }
+  }, [])
+
+  const setVolume = useCallback((newVolume: number) => {
+    const clampedVolume = Math.max(0, Math.min(1, newVolume))
+    volumeRef.current = clampedVolume
+    setVolumeState(clampedVolume)
+    localStorage.setItem('descent-volume', String(clampedVolume))
+
+    const e = engineRef.current
+    if (!e || !enabledRef.current) return
+
+    e.masterGain.gain.linearRampToValueAtTime(clampedVolume, e.ctx.currentTime + 0.1)
   }, [])
 
   useEffect(() => {
@@ -556,5 +574,7 @@ export function useAudio(progress: number, _duration: number, isPlaying: boolean
     initAudio,
     isInitialized,
     setEnabled,
+    volume,
+    setVolume,
   }
 }
