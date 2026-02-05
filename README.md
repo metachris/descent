@@ -8,6 +8,8 @@ What happens if you jump into a tunnel that goes straight through the planet? Sp
 
 ![Descent Preview](public/og-image.svg)
 
+All code and content released under the MIT License. Fork it, remix it, make it your own.
+
 ## Features
 
 - **Poetic narrative** — Second-person, present tense. You're not learning physics, you're *experiencing* it.
@@ -15,6 +17,16 @@ What happens if you jump into a tunnel that goes straight through the planet? Sp
 - **Voice narration** — Your browser reads the story aloud (toggle it on in the controls)
 - **Procedural audio** — No audio files. Everything is synthesized in real-time with Web Audio API.
 - **3.5 minutes** — Short enough to share, long enough to feel something.
+
+
+## Personal note
+
+I've been fascinated by this thought experiment - of falling through the Earth - since several years, ever since I read [this article by Prof. Baird](https://www.wtamu.edu/~cbaird/sq/2013/10/04/what-would-happen-if-you-fell-into-a-hole-that-went-through-the-center-of-the-earth/).
+
+Now I wanted to use Claude Code for something fun and creative, and this idea came up, which I'm super happy about. We jammed for about ten hours on this, with Claude handling most/all of the implementation while I focused only on the creative direction and feedback, with minimal technical input.
+
+It was a blast, and pretty astonishing on some levels. I would never have had the time to build this, besides family and work, if I needed to read all the docs and learn all the pieces. It would have taken me weeks and simply would never have happened. This approach feels like a significant unlock of creative potential, both for me personally, and I think/hope for many others as well.
+
 
 ## Quick Start
 
@@ -36,7 +48,7 @@ This project was built with [Claude Code](https://claude.ai/code). Want to remix
    - *"Make the visuals more psychedelic"*
    - *"Add a heartbeat sound that speeds up as you approach the core"*
    - *"Change the ending to be more ominous"*
-4. **Push to your fork** — GitHub Actions will auto-deploy to your GitHub Pages
+4. **Push to your fork** — GitHub Actions will auto-deploy to your GitHub Pages (you will need to enable GitHub Pages with Source: GitHub Actions it in your repository settings)
 
 The `CLAUDE.md` file gives Claude all the context it needs about the project structure, key files, and design decisions.
 
