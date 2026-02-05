@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { LanguageSelector } from './LanguageSelector'
 
 interface EndScreenProps {
   onRestart: () => void
@@ -43,6 +44,11 @@ export default function EndScreen({ onRestart, isVisible }: EndScreenProps) {
         isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
+      {/* Language selector - top right */}
+      <div className="absolute top-6 right-6 z-20">
+        <LanguageSelector variant="full" />
+      </div>
+
       {/* Dark overlay for contrast */}
       <div className="absolute inset-0 bg-black/60" />
 

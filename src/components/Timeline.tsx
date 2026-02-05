@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useJourney } from '../hooks/useJourney'
 import { useAudio } from '../hooks/useAudio'
+import { LanguageSelector } from './LanguageSelector'
 
 export default function Timeline() {
   const { progress, isPlaying, play, pause, seek, duration } = useJourney()
@@ -87,7 +88,9 @@ export default function Timeline() {
             {formatTime(currentTime)} / {formatTime(duration)}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <LanguageSelector variant="minimal" />
+
             <button
               onClick={toggleMute}
               className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"

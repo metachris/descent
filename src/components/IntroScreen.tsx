@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { LanguageSelector } from './LanguageSelector'
 
 interface IntroScreenProps {
   onStart: () => void
@@ -18,6 +19,11 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
         isExiting ? 'opacity-0' : 'opacity-100'
       }`}
     >
+      {/* Language selector - top right */}
+      <div className="absolute top-6 right-6 z-20">
+        <LanguageSelector variant="full" />
+      </div>
+
       {/* Stars background */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(50)].map((_, i) => (

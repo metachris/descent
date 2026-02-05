@@ -1,6 +1,6 @@
 # Building Descent: A Journey to the Center of the Earth
 
-What would happen if you jumped into a tunnel that went straight through the Earth? It's a classic physics thought experiment—one that usually ends with equations about simple harmonic motion and a neat answer of "38 minutes to the other side."
+What would happen if you jumped into a tunnel that went straight through the Earth? It's a classic physics thought experiment—one that usually ends with equations about [simple harmonic motion](https://en.wikipedia.org/wiki/Simple_harmonic_motion) and a neat answer of "38 minutes to the other side."
 
 But that answer assumes a vacuum. No air. No friction. In reality, you'd fall through air, hit terminal velocity around 200 km/h, and the journey would take about a week. You'd also die within the first kilometer from heat stroke.
 
@@ -46,22 +46,22 @@ Instead, Descent plays like a video. It auto-plays with a timeline scrubber. You
 
 ### The Tech Stack
 
-- **React 18 + TypeScript** — Component architecture for the UI layers
-- **Vite** — Fast builds, great HMR, no configuration headaches
-- **Tailwind CSS** — Rapid styling without context-switching
-- **Zustand** — Minimal state management for playback state
+- **[React 18](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)** — Component architecture for the UI layers
+- **[Vite](https://vitejs.dev/)** — Fast builds, great HMR, no configuration headaches
+- **[Tailwind CSS](https://tailwindcss.com/)** — Rapid styling without context-switching
+- **[Zustand](https://zustand-demo.pmnd.rs/)** — Minimal state management for playback state
 
-No 3D libraries. No WebGL. The visuals are CSS gradients, layered divs, and some canvas work for particles. This keeps it fast and accessible—no GPU requirements, works on any device.
+No 3D libraries. No [WebGL](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API). The visuals are CSS gradients, layered divs, and some canvas work for particles. This keeps it fast and accessible—no GPU requirements, works on any device.
 
 ### Procedural Audio
 
-The sound design is entirely procedural—no audio files. The Web Audio API generates everything in real-time:
+The sound design is entirely procedural—no audio files. The [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API) generates everything in real-time:
 
 - **Warm pad**: Four detuned triangle oscillators creating a rich, chorused drone
 - **Harmonic drone**: Perfect fifth intervals (E-B-E) that slowly descend as you fall
 - **Gentle wind**: Ultra-smooth brown noise, heavily filtered
 - **Crystalline shimmer**: High harmonics that fade in during the inner core
-- **Double reverb**: 4-second and 6-second convolution reverbs for depth
+- **Double reverb**: 4-second and 6-second [convolution reverbs](https://en.wikipedia.org/wiki/Convolution_reverb) for depth
 
 The soundscape evolves with your progress. It swells during the plunge, fades during death, becomes vast and meditative during the long fall, and reaches maximum reverb at the center. No sudden changes—everything crossfades over 0.8 seconds or more.
 
@@ -75,7 +75,7 @@ The soundscape evolves with your progress. It swells during the plunge, fades du
 
 ## Built with Claude Code
 
-This project was built collaboratively with Claude Code. The workflow was conversational—describing what I wanted, iterating on the narrative, debugging the audio system, refining the pacing. It's a different way of building software: more like directing than typing.
+This project was built collaboratively with [Claude Code](https://claude.ai/code), Anthropic's AI coding assistant. The workflow was conversational—describing what I wanted, iterating on the narrative, debugging the audio system, refining the pacing. It's a different way of building software: more like directing than typing.
 
 Some things Claude Code handled particularly well:
 - Generating the procedural audio system from a description of the desired atmosphere
@@ -94,4 +94,4 @@ The experience succeeds if you say "this made me feel something." That was alway
 
 ---
 
-*Created by Chris Hager with Claude Code. Based on physics from Dr. Christopher S. Baird.*
+*Created by [Chris Hager](https://www.chrishager.at) with [Claude Code](https://claude.ai/code). Based on physics from [Dr. Christopher S. Baird](https://www.wtamu.edu/~cbaird/sq/2013/10/04/what-would-happen-if-you-fell-into-a-hole-that-went-through-the-center-of-the-earth/).*

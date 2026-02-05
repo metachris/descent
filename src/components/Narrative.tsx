@@ -1,17 +1,19 @@
 import { useMemo } from 'react'
 import { useJourney } from '../hooks/useJourney'
-import { NARRATIVE, NarrativeStyle } from '../data/content'
+import { useLanguage } from '../hooks/useLanguage'
+import { NarrativeStyle } from '../data/content'
 
 export default function Narrative() {
   const { progress, duration } = useJourney()
+  const { narrative } = useLanguage()
   const currentTime = progress * duration
 
   // Find current narrative block
   const currentNarrative = useMemo(() => {
-    return NARRATIVE.find(n =>
+    return narrative.find(n =>
       currentTime >= n.startTime && currentTime <= n.endTime
     )
-  }, [currentTime])
+  }, [currentTime, narrative])
 
   if (!currentNarrative) return null
 
