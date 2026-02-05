@@ -747,6 +747,7 @@ export function useAudio(progress: number, _duration: number, isPlaying: boolean
     } else {
       // Gentle fade out
       e.masterGain.gain.linearRampToValueAtTime(0, e.ctx.currentTime + 1)
+      stopDrumLoop()
     }
   }, [isPlaying])
 
@@ -776,6 +777,7 @@ export function useAudio(progress: number, _duration: number, isPlaying: boolean
 
   useEffect(() => {
     return () => {
+      stopDrumLoop()
       engineRef.current = null
     }
   }, [])

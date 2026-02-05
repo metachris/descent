@@ -113,7 +113,7 @@ export default function EndScreen({ onRestart, isVisible }: EndScreenProps) {
           <p>
             Created by{' '}
             <a
-              href="https://www.chrishager.at"
+              href="https://www.metachris.dev"
               target="_blank"
               rel="noopener noreferrer"
               className="underline hover:text-white/60"
