@@ -39,10 +39,17 @@ interface AudioEngine {
   // Second reverb for extra depth
   convolver2: ConvolverNode
   reverb2Gain: GainNode
+
+  // Drums/percussion
+  drumGain: GainNode
+  drumFilter: BiquadFilterNode
+  noiseBuffer: AudioBuffer
 }
 
 let engine: AudioEngine | null = null
 let isEngineRunning = false
+let drumIntervalId: number | null = null
+let currentDrumParams = { volume: 0, tempo: 0.5, intensity: 0 }
 
 // Create smooth brown noise - very gentle, no harsh frequencies
 function createSmoothNoise(ctx: AudioContext): AudioBuffer {
@@ -118,6 +125,121 @@ function createSpaceReverb(ctx: AudioContext): AudioBuffer {
   }
 
   return buffer
+}
+
+// Play a soft kick/heartbeat sound
+function playKick(e: AudioEngine, volume: number, pitch: number = 55) {
+  if (volume <= 0) return
+
+  const ctx = e.ctx
+  const now = ctx.currentTime
+
+  // Kick using sine wave with pitch envelope
+  const kickOsc = ctx.createOscillator()
+  const kickGain = ctx.createGain()
+
+  kickOsc.type = 'sine'
+  kickOsc.frequency.setValueAtTime(pitch * 2, now)
+  kickOsc.frequency.exponentialRampToValueAtTime(pitch, now + 0.05)
+
+  kickGain.gain.setValueAtTime(volume * 0.4, now)
+  kickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3)
+
+  kickOsc.connect(kickGain)
+  kickGain.connect(e.drumFilter)
+
+  kickOsc.start(now)
+  kickOsc.stop(now + 0.35)
+}
+
+// Play a soft percussive hit (like a muted tom or hand drum)
+function playPerc(e: AudioEngine, volume: number, pitch: number = 100) {
+  if (volume <= 0) return
+
+  const ctx = e.ctx
+  const now = ctx.currentTime
+
+  // Noise burst for attack
+  const noiseSource = ctx.createBufferSource()
+  noiseSource.buffer = e.noiseBuffer
+
+  const noiseGain = ctx.createGain()
+  const noiseFilter = ctx.createBiquadFilter()
+
+  noiseFilter.type = 'bandpass'
+  noiseFilter.frequency.value = pitch * 4
+  noiseFilter.Q.value = 2
+
+  noiseGain.gain.setValueAtTime(volume * 0.15, now)
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1)
+
+  noiseSource.connect(noiseFilter)
+  noiseFilter.connect(noiseGain)
+  noiseGain.connect(e.drumFilter)
+
+  noiseSource.start(now)
+  noiseSource.stop(now + 0.15)
+
+  // Tonal body
+  const bodyOsc = ctx.createOscillator()
+  const bodyGain = ctx.createGain()
+
+  bodyOsc.type = 'triangle'
+  bodyOsc.frequency.setValueAtTime(pitch, now)
+  bodyOsc.frequency.exponentialRampToValueAtTime(pitch * 0.5, now + 0.15)
+
+  bodyGain.gain.setValueAtTime(volume * 0.2, now)
+  bodyGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2)
+
+  bodyOsc.connect(bodyGain)
+  bodyGain.connect(e.drumFilter)
+
+  bodyOsc.start(now)
+  bodyOsc.stop(now + 0.25)
+}
+
+// Drum sequencer - plays rhythmic patterns
+function startDrumLoop(e: AudioEngine) {
+  if (drumIntervalId !== null) return
+
+  let beat = 0
+  const scheduleNext = () => {
+    const { volume, tempo, intensity } = currentDrumParams
+
+    if (volume > 0 && tempo > 0) {
+      // Main heartbeat-like kick on beats 1 and 3
+      if (beat % 4 === 0) {
+        playKick(e, volume, 45 + intensity * 20)
+      }
+      // Softer kick on beat 3
+      if (beat % 4 === 2 && intensity > 0.3) {
+        playKick(e, volume * 0.5, 50 + intensity * 15)
+      }
+      // Light percussion on off-beats when intensity is higher
+      if (beat % 2 === 1 && intensity > 0.5) {
+        playPerc(e, volume * 0.3 * (intensity - 0.5) * 2, 80 + intensity * 40)
+      }
+      // Extra texture at high intensity
+      if (intensity > 0.7 && beat % 4 === 3) {
+        playPerc(e, volume * 0.2, 120)
+      }
+    }
+
+    beat = (beat + 1) % 16
+
+    // Schedule next beat - tempo controls speed (0.3 = slow, 1 = fast)
+    const interval = 400 + (1 - tempo) * 600 // 400-1000ms between beats
+    drumIntervalId = window.setTimeout(scheduleNext, interval)
+  }
+
+  scheduleNext()
+}
+
+function stopDrumLoop() {
+  if (drumIntervalId !== null) {
+    clearTimeout(drumIntervalId)
+    drumIntervalId = null
+  }
 }
 
 function createEngine(ctx: AudioContext): AudioEngine {
@@ -266,6 +388,22 @@ function createEngine(ctx: AudioContext): AudioEngine {
   shimmerGain.connect(convolver) // Shimmer only through reverb
   shimmerGain.connect(convolver2)
 
+  // === DRUMS/PERCUSSION ===
+  const drumGain = ctx.createGain()
+  drumGain.gain.value = 0.5
+
+  const drumFilter = ctx.createBiquadFilter()
+  drumFilter.type = 'lowpass'
+  drumFilter.frequency.value = 800 // Keep drums warm
+  drumFilter.Q.value = 0.5
+
+  drumGain.connect(drumFilter)
+  drumFilter.connect(dryGain)
+  drumFilter.connect(convolver) // Some reverb on drums
+
+  // Create noise buffer for percussion
+  const noiseBuffer = createSmoothNoise(ctx)
+
   return {
     ctx,
     masterGain,
@@ -288,6 +426,9 @@ function createEngine(ctx: AudioContext): AudioEngine {
     dryGain,
     convolver2,
     reverb2Gain,
+    drumGain,
+    drumFilter,
+    noiseBuffer,
   }
 }
 
@@ -295,6 +436,7 @@ function startEngine(e: AudioEngine) {
   if (isEngineRunning) return
 
   e.padOscs.forEach(osc => osc.start())
+  startDrumLoop(e)
   e.subOsc.start()
   e.windNoise.start()
   e.droneOscs.forEach(osc => osc.start())
@@ -460,6 +602,68 @@ function updateSoundscape(e: AudioEngine, progress: number) {
     const baseFreqs = [880, 1318.5, 1760, 2217.5]
     osc.frequency.linearRampToValueAtTime(baseFreqs[i] * shimmerMod, now + 0.1)
   })
+
+  // === DRUMS/PERCUSSION ===
+  // Light rhythmic heartbeat that evolves with the journey
+  let drumVol = 0
+  let drumTempo = 0.4 // Slow
+  let drumIntensity = 0
+
+  if (progress < 0.05) {
+    // Edge: silence, anticipation
+    drumVol = 0
+  } else if (progress < 0.08) {
+    // Plunge: heartbeat begins
+    const t = (progress - 0.05) / 0.03
+    drumVol = t * 0.15
+    drumTempo = 0.3
+    drumIntensity = 0.2
+  } else if (progress < 0.16) {
+    // Death: heartbeat slows and fades
+    const t = (progress - 0.08) / 0.08
+    drumVol = 0.15 * (1 - t * 0.7)
+    drumTempo = 0.3 - t * 0.15
+    drumIntensity = 0.2 * (1 - t)
+  } else if (progress < 0.26) {
+    // Body continues: drums fade out completely
+    const t = (progress - 0.16) / 0.10
+    drumVol = 0.05 * (1 - t)
+    drumTempo = 0.15
+    drumIntensity = 0
+  } else if (progress < 0.47) {
+    // Long fall: gentle, meditative pulse
+    drumVol = 0.08
+    drumTempo = 0.35
+    drumIntensity = 0.3
+  } else if (progress < 0.60) {
+    // Outer core: building intensity
+    const t = (progress - 0.47) / 0.13
+    drumVol = 0.08 + t * 0.07
+    drumTempo = 0.35 + t * 0.2
+    drumIntensity = 0.3 + t * 0.3
+  } else if (progress < 0.75) {
+    // Inner core: peak intensity
+    drumVol = 0.15
+    drumTempo = 0.55
+    drumIntensity = 0.6
+  } else if (progress < 0.85) {
+    // Approaching center: slowing, fading
+    const t = (progress - 0.75) / 0.10
+    drumVol = 0.15 * (1 - t * 0.7)
+    drumTempo = 0.55 - t * 0.25
+    drumIntensity = 0.6 * (1 - t)
+  } else {
+    // Center: silence, weightlessness
+    drumVol = 0
+    drumTempo = 0
+    drumIntensity = 0
+  }
+
+  // Update global drum parameters for the sequencer
+  currentDrumParams = { volume: drumVol, tempo: drumTempo, intensity: drumIntensity }
+
+  // Update drum filter - opens up with intensity
+  e.drumFilter.frequency.linearRampToValueAtTime(600 + drumIntensity * 400, now + ramp)
 
   // === REVERB MIX ===
   // More cavernous as we descend
