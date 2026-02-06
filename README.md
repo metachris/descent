@@ -85,7 +85,7 @@ Based on real physics from [Dr. Christopher S. Baird](https://www.wtamu.edu/~cba
 
 ## Credits
 
-Created by [Chris Hager](https://www.metachris.com) with [Claude Code](https://claude.ai/code).
+Created by [Chris Hager](https://www.metachris.dev) with [Claude Code](https://claude.ai/code).
 
 ---
 

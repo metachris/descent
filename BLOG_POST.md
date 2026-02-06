@@ -130,4 +130,4 @@ The experience succeeds if you say "this made me feel something." That was alway
 
 ---
 
-*Created by [Chris Hager](https://www.chrishager.at) with [Claude Code](https://claude.ai/code). Based on physics from [Dr. Christopher S. Baird](https://www.wtamu.edu/~cbaird/sq/2013/10/04/what-would-happen-if-you-fell-into-a-hole-that-went-through-the-center-of-the-earth/).*
+*Created by [Chris Hager](https://www.metachris.dev) with [Claude Code](https://claude.ai/code). Based on physics from [Dr. Christopher S. Baird](https://www.wtamu.edu/~cbaird/sq/2013/10/04/what-would-happen-if-you-fell-into-a-hole-that-went-through-the-center-of-the-earth/).*
