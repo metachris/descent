@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useJourney } from '../hooks/useJourney'
 import { PHASES, getPhaseAtTime } from '../data/content'
 import ParticleField from './ParticleField'
+import TunnelEffect from './TunnelEffect'
 import HeatDistortion from './HeatDistortion'
 
 // Phase visual configurations
@@ -103,6 +104,9 @@ export default function PhaseVisual() {
 
       {/* Canvas-based particle field */}
       <ParticleField />
+
+      {/* Tunnel falling effect */}
+      <TunnelEffect />
 
       {/* Heat distortion shader effect */}
       <HeatDistortion />

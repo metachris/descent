@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useJourney } from '../hooks/useJourney'
 import { useLanguage } from '../hooks/useLanguage'
 import { useSpeech } from '../hooks/useSpeech'
-import { NarrativeStyle } from '../data/content'
+import { NarrativeStyle, NarrativeEntry } from '../data/content'
 
 const SPEECH_LANG_CODES: Record<string, string> = {
   en: 'en-US',
@@ -20,7 +20,7 @@ export default function Narrative() {
 
   // Find current narrative block
   const currentNarrative = useMemo(() => {
-    return narrative.find(n =>
+    return narrative.find((n: NarrativeEntry) =>
       currentTime >= n.startTime && currentTime <= n.endTime
     )
   }, [currentTime, narrative])

@@ -30,69 +30,69 @@ const PHASE_PARTICLES: Record<string, {
 }> = {
   'The Edge': {
     types: ['dust'],
-    density: 0.3,
-    baseSpeed: 0.5,
-    colors: ['rgba(100, 150, 200, 0.3)', 'rgba(150, 180, 220, 0.2)']
+    density: 0,
+    baseSpeed: 0,
+    colors: []
   },
   'The Plunge': {
     types: ['debris', 'dust'],
-    density: 0.5,
-    baseSpeed: 2,
+    density: 0.4,
+    baseSpeed: 0.8,
     colors: ['rgba(139, 115, 85, 0.6)', 'rgba(160, 140, 110, 0.4)', 'rgba(100, 80, 60, 0.5)']
   },
   'Heat Death': {
     types: ['debris', 'ember'],
-    density: 0.6,
-    baseSpeed: 3,
+    density: 0.5,
+    baseSpeed: 1.2,
     colors: ['rgba(180, 80, 40, 0.7)', 'rgba(220, 100, 50, 0.6)', 'rgba(139, 69, 19, 0.5)']
   },
   'Boiling': {
     types: ['ember', 'debris'],
-    density: 0.7,
-    baseSpeed: 4,
+    density: 0.6,
+    baseSpeed: 1.6,
     colors: ['rgba(255, 100, 50, 0.8)', 'rgba(255, 150, 50, 0.6)', 'rgba(200, 60, 30, 0.7)']
   },
   'Crushing': {
-    types: ['dust'],
-    density: 0,
-    baseSpeed: 0,
-    colors: []
+    types: ['dust', 'debris'],
+    density: 0.2,
+    baseSpeed: 0.6,
+    colors: ['rgba(120, 110, 100, 0.4)', 'rgba(90, 80, 70, 0.5)', 'rgba(70, 60, 50, 0.3)']
   },
   'Incineration': {
-    types: ['dust'],
-    density: 0,
-    baseSpeed: 0,
-    colors: []
+    types: ['ember', 'magma'],
+    density: 0.4,
+    baseSpeed: 1.4,
+    colors: ['rgba(255, 140, 50, 0.8)', 'rgba(255, 100, 30, 0.7)', 'rgba(220, 80, 20, 0.6)']
   },
   'The Long Fall': {
     types: ['dust'],
-    density: 0,
-    baseSpeed: 0,
-    colors: []
+    density: 0.1,
+    baseSpeed: 0.3,
+    colors: ['rgba(80, 70, 60, 0.2)', 'rgba(100, 90, 80, 0.15)']
   },
   'Outer Core': {
-    types: ['dust'],
-    density: 0,
-    baseSpeed: 0,
-    colors: []
+    types: ['magma', 'ember'],
+    density: 0.15,
+    baseSpeed: 0.4,
+    colors: ['rgba(255, 160, 60, 0.3)', 'rgba(240, 120, 40, 0.25)', 'rgba(200, 90, 30, 0.2)']
   },
   'Inner Core': {
-    types: ['dust'],
-    density: 0,
-    baseSpeed: 0,
-    colors: []
+    types: ['crystal', 'sparkle'],
+    density: 0.2,
+    baseSpeed: 0.15,
+    colors: ['rgba(255, 215, 80, 0.3)', 'rgba(255, 200, 60, 0.25)', 'rgba(250, 230, 120, 0.2)']
   },
   'The Center': {
-    types: ['dust'],
-    density: 0,
-    baseSpeed: 0,
-    colors: []
+    types: ['sparkle'],
+    density: 0.15,
+    baseSpeed: 0.08,
+    colors: ['rgba(255, 230, 130, 0.25)', 'rgba(255, 245, 180, 0.2)', 'rgba(255, 220, 100, 0.15)']
   },
   'The Yo-Yo': {
-    types: ['dust'],
-    density: 0,
-    baseSpeed: 0,
-    colors: []
+    types: ['sparkle'],
+    density: 0.1,
+    baseSpeed: 0.04,
+    colors: ['rgba(255, 230, 150, 0.15)', 'rgba(255, 245, 200, 0.1)']
   }
 }
 
@@ -109,62 +109,67 @@ export default function ParticleField() {
   const depth = useMemo(() => getDepthAtTime(currentTime), [currentTime])
   const temperature = useMemo(() => getTemperatureAtDepth(depth), [depth])
 
-  // Create a particle
+  // Create a particle — spawns near center, flies radially outward
   const createParticle = (canvas: HTMLCanvasElement, config: typeof PHASE_PARTICLES[string]): Particle => {
     const type = config.types[Math.floor(Math.random() * config.types.length)]
     const color = config.colors[Math.floor(Math.random() * config.colors.length)]
 
-    let size: number
-    let vx: number
-    let vy: number
+    const cx = canvas.width / 2
+    const cy = canvas.height / 2
+    const halfScreen = Math.min(cx, cy)
 
-    // Negative vy = particles move UP (you're falling DOWN past them)
+    // Random radial angle
+    const angle = Math.random() * Math.PI * 2
+
+    let size: number
+    let speed: number
+    let spawnRadius: number
+
     switch (type) {
       case 'debris':
-        size = 2 + Math.random() * 4
-        vx = (Math.random() - 0.5) * 0.5
-        vy = -(config.baseSpeed + Math.random() * 2)
+        size = 2 + Math.random() * 3
+        speed = config.baseSpeed + Math.random() * 1
+        spawnRadius = halfScreen * (0.3 + Math.random() * 0.4)
         break
       case 'ember':
-        size = 1 + Math.random() * 3
-        vx = (Math.random() - 0.5) * 2
-        vy = -(config.baseSpeed + Math.random() * 3)
+        size = 1 + Math.random() * 2
+        speed = config.baseSpeed + Math.random() * 1.5
+        spawnRadius = halfScreen * (0.25 + Math.random() * 0.4)
         break
       case 'magma':
-        size = 3 + Math.random() * 6
-        vx = (Math.random() - 0.5) * 1
-        vy = -(config.baseSpeed * 0.7 + Math.random() * 2)
+        size = 2 + Math.random() * 4
+        speed = config.baseSpeed * 0.7 + Math.random() * 1
+        spawnRadius = halfScreen * (0.3 + Math.random() * 0.35)
         break
       case 'crystal':
-        size = 1 + Math.random() * 2
-        vx = (Math.random() - 0.5) * 0.3
-        vy = (Math.random() - 0.5) * 0.5 // Float in place at center
+        size = 1 + Math.random() * 1.5
+        speed = config.baseSpeed * 0.3
+        spawnRadius = halfScreen * (0.4 + Math.random() * 0.5)
         break
       case 'sparkle':
-        size = 1.5 + Math.random() * 2
-        vx = (Math.random() - 0.5) * 0.1 // Very subtle drift
-        vy = (Math.random() - 0.5) * 0.1
+        size = 1 + Math.random() * 1.5
+        speed = config.baseSpeed * 0.15
+        spawnRadius = halfScreen * (0.35 + Math.random() * 0.5)
         break
       case 'dust':
       default:
-        size = 0.5 + Math.random() * 1.5
-        vx = (Math.random() - 0.5) * 0.3
-        vy = -(config.baseSpeed * 0.5 + Math.random())
+        size = 0.5 + Math.random() * 1
+        speed = config.baseSpeed * 0.5 + Math.random() * 0.5
+        spawnRadius = halfScreen * (0.25 + Math.random() * 0.45)
         break
     }
+
+    // Radial velocity: outward from center
+    const vx = Math.cos(angle) * speed
+    const vy = Math.sin(angle) * speed
 
     const maxLife = type === 'crystal' || type === 'sparkle'
       ? 200 + Math.random() * 300
       : 100 + Math.random() * 150
 
-    // Sparkles spawn anywhere and stay in place
-    const spawnY = type === 'crystal' || type === 'sparkle'
-      ? Math.random() * canvas.height
-      : canvas.height + size * 2
-
     return {
-      x: Math.random() * canvas.width,
-      y: spawnY,
+      x: cx + Math.cos(angle) * spawnRadius,
+      y: cy + Math.sin(angle) * spawnRadius,
       vx,
       vy,
       size,
@@ -175,7 +180,6 @@ export default function ParticleField() {
       maxLife,
       rotation: Math.random() * Math.PI * 2,
       rotationSpeed: (Math.random() - 0.5) * 0.1,
-      // Sparkle-specific: random phase and speed for twinkling
       sparklePhase: Math.random() * Math.PI * 2,
       sparkleSpeed: 0.05 + Math.random() * 0.15,
       baseSize: size,
@@ -346,13 +350,23 @@ export default function ParticleField() {
           p.opacity = 1
         }
 
-        // Special handling for crystals in center phases
-        if (p.type === 'crystal' && (phaseName === 'The Center' || phaseName === 'The Yo-Yo')) {
-          // Gentle floating
-          p.vx += (Math.random() - 0.5) * 0.02
-          p.vy += (Math.random() - 0.5) * 0.02
-          p.vx *= 0.99
-          p.vy *= 0.99
+        // Radial acceleration — particles speed up as they fly outward (perspective)
+        const dx = p.x - canvas.width / 2
+        const dy = p.y - canvas.height / 2
+        const dist = Math.sqrt(dx * dx + dy * dy)
+
+        if (p.type === 'crystal' || p.type === 'sparkle') {
+          // Gentle radial drift for sparkles/crystals
+          if (dist > 1) {
+            p.vx += (dx / dist) * 0.001
+            p.vy += (dy / dist) * 0.001
+          }
+          p.vx += (Math.random() - 0.5) * 0.005
+          p.vy += (Math.random() - 0.5) * 0.005
+        } else if (dist > 1) {
+          // Other types: very gentle outward acceleration
+          p.vx += (dx / dist) * 0.008
+          p.vy += (dy / dist) * 0.008
         }
 
         // Update position

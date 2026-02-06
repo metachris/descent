@@ -1,21 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react'
-import { getProject, types } from '@theatre/core'
-import studio from '@theatre/studio'
 import { TOTAL_DURATION } from '../data/content'
-
-// Initialize Theatre.js Studio in development
-if (import.meta.env.DEV) {
-  studio.initialize()
-}
-
-// Create Theatre.js project
-const project = getProject('Descent')
-const sheet = project.sheet('Journey')
-
-// Define the animated properties
-const journeyObj = sheet.object('Journey', {
-  progress: types.number(0, { range: [0, 1] }),
-})
 
 interface JourneyContextType {
   progress: number
@@ -56,9 +40,6 @@ export function JourneyProvider({ children }: { children: ReactNode }) {
       const newProgress = Math.max(0, Math.min(progressRef.current + delta / TOTAL_DURATION, 1))
       progressRef.current = newProgress
 
-      // Update Theatre.js
-      sheet.sequence.position = Math.max(0, newProgress * TOTAL_DURATION)
-
       // Update React state for UI
       setProgress(newProgress)
 
@@ -88,7 +69,6 @@ export function JourneyProvider({ children }: { children: ReactNode }) {
   const seek = useCallback((newProgress: number) => {
     const clamped = Math.max(0, Math.min(1, newProgress))
     progressRef.current = clamped
-    sheet.sequence.position = clamped * TOTAL_DURATION
     setProgress(clamped)
   }, [])
 
@@ -121,4 +101,3 @@ export function useJourney(): JourneyContextType {
   return context
 }
 
-export { project, sheet, journeyObj }

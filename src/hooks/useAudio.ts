@@ -11,6 +11,7 @@ interface AudioEngine {
   padOscs: OscillatorNode[]
   padGain: GainNode
   padFilter: BiquadFilterNode
+  padPanners: StereoPannerNode[]
 
   // Deep sub-harmonic
   subOsc: OscillatorNode
@@ -20,16 +21,21 @@ interface AudioEngine {
   windNoise: AudioBufferSourceNode
   windFilter: BiquadFilterNode
   windGain: GainNode
+  windPanner: StereoPannerNode
+  windLfo: OscillatorNode
+  windLfoGain: GainNode
 
   // Harmonic drone (musical intervals)
   droneOscs: OscillatorNode[]
   droneGain: GainNode
   droneFilter: BiquadFilterNode
+  dronePanners: StereoPannerNode[]
 
   // Shimmer (soft high harmonics for inner core)
   shimmerOscs: OscillatorNode[]
   shimmerGain: GainNode
   shimmerFilter: BiquadFilterNode
+  shimmerPanners: StereoPannerNode[]
 
   // Reverb
   convolver: ConvolverNode
@@ -43,7 +49,10 @@ interface AudioEngine {
   // Drums/percussion
   drumGain: GainNode
   drumFilter: BiquadFilterNode
+  drumKickPanner: StereoPannerNode
+  drumPercPanner: StereoPannerNode
   noiseBuffer: AudioBuffer
+  drumPercSide: number
 }
 
 let engine: AudioEngine | null = null
@@ -146,7 +155,8 @@ function playKick(e: AudioEngine, volume: number, pitch: number = 55) {
   kickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3)
 
   kickOsc.connect(kickGain)
-  kickGain.connect(e.drumFilter)
+  kickGain.connect(e.drumKickPanner)
+  e.drumKickPanner.connect(e.drumFilter)
 
   kickOsc.start(now)
   kickOsc.stop(now + 0.35)
@@ -173,9 +183,14 @@ function playPerc(e: AudioEngine, volume: number, pitch: number = 100) {
   noiseGain.gain.setValueAtTime(volume * 0.15, now)
   noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1)
 
+  // Alternate perc panning side
+  e.drumPercSide = e.drumPercSide * -1
+  e.drumPercPanner.pan.value = e.drumPercSide * 0.15
+
   noiseSource.connect(noiseFilter)
   noiseFilter.connect(noiseGain)
-  noiseGain.connect(e.drumFilter)
+  noiseGain.connect(e.drumPercPanner)
+  e.drumPercPanner.connect(e.drumFilter)
 
   noiseSource.start(now)
   noiseSource.stop(now + 0.15)
@@ -192,7 +207,7 @@ function playPerc(e: AudioEngine, volume: number, pitch: number = 100) {
   bodyGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2)
 
   bodyOsc.connect(bodyGain)
-  bodyGain.connect(e.drumFilter)
+  bodyGain.connect(e.drumPercPanner)
 
   bodyOsc.start(now)
   bodyOsc.stop(now + 0.25)
@@ -280,6 +295,8 @@ function createEngine(ctx: AudioContext): AudioEngine {
   padFilter.Q.value = 0.5
 
   // Create 4 detuned oscillators for rich pad sound
+  const padPanners: StereoPannerNode[] = []
+  const padPanPositions = [-0.3, -0.1, 0.1, 0.3]
   const padFreqs = [55, 55.2, 54.8, 110] // Slightly detuned + octave
   padFreqs.forEach((freq, i) => {
     const osc = ctx.createOscillator()
@@ -290,9 +307,15 @@ function createEngine(ctx: AudioContext): AudioEngine {
     const oscGain = ctx.createGain()
     oscGain.gain.value = i === 3 ? 0.15 : 0.25 // Octave quieter
 
+    // Stereo panner per oscillator
+    const panner = ctx.createStereoPanner()
+    panner.pan.value = padPanPositions[i]
+
     osc.connect(oscGain)
-    oscGain.connect(padFilter)
+    oscGain.connect(panner)
+    panner.connect(padFilter)
     padOscs.push(osc)
+    padPanners.push(panner)
   })
 
   padFilter.connect(padGain)
@@ -324,8 +347,20 @@ function createEngine(ctx: AudioContext): AudioEngine {
   const windGain = ctx.createGain()
   windGain.gain.value = 0
 
+  // Wind panner with LFO sweep
+  const windPanner = ctx.createStereoPanner()
+  windPanner.pan.value = 0
+  const windLfo = ctx.createOscillator()
+  windLfo.type = 'sine'
+  windLfo.frequency.value = 0.1
+  const windLfoGain = ctx.createGain()
+  windLfoGain.gain.value = 0.2 // ±0.2 pan range
+  windLfo.connect(windLfoGain)
+  windLfoGain.connect(windPanner.pan)
+
   windNoise.connect(windFilter)
-  windFilter.connect(windGain)
+  windFilter.connect(windPanner)
+  windPanner.connect(windGain)
   windGain.connect(dryGain)
   windGain.connect(convolver)
 
@@ -340,6 +375,8 @@ function createEngine(ctx: AudioContext): AudioEngine {
   droneFilter.Q.value = 0.7
 
   // Perfect fifth and octave - naturally harmonious
+  const dronePanners: StereoPannerNode[] = []
+  const dronePanPositions = [-0.4, 0, 0.4]
   const droneFreqs = [82.4, 123.5, 164.8] // E2, B2, E3 - open fifth harmony
   droneFreqs.forEach((freq, i) => {
     const osc = ctx.createOscillator()
@@ -349,9 +386,14 @@ function createEngine(ctx: AudioContext): AudioEngine {
     const oscGain = ctx.createGain()
     oscGain.gain.value = i === 0 ? 0.3 : 0.15 // Root louder
 
+    const panner = ctx.createStereoPanner()
+    panner.pan.value = dronePanPositions[i]
+
     osc.connect(oscGain)
-    oscGain.connect(droneFilter)
+    oscGain.connect(panner)
+    panner.connect(droneFilter)
     droneOscs.push(osc)
+    dronePanners.push(panner)
   })
 
   droneFilter.connect(droneGain)
@@ -370,8 +412,10 @@ function createEngine(ctx: AudioContext): AudioEngine {
   shimmerFilter.Q.value = 0.5
 
   // High harmonics with slight detuning
+  const shimmerPanners: StereoPannerNode[] = []
+  const shimmerPanPositions = [-0.6, -0.2, 0.2, 0.6]
   const shimmerFreqs = [880, 1318.5, 1760, 2217.5] // A5, E6, A6, C#7 - A major spread
-  shimmerFreqs.forEach((freq) => {
+  shimmerFreqs.forEach((freq, i) => {
     const osc = ctx.createOscillator()
     osc.type = 'sine'
     osc.frequency.value = freq + (Math.random() - 0.5) * 2 // Tiny detune
@@ -379,9 +423,14 @@ function createEngine(ctx: AudioContext): AudioEngine {
     const oscGain = ctx.createGain()
     oscGain.gain.value = 0.08
 
+    const panner = ctx.createStereoPanner()
+    panner.pan.value = shimmerPanPositions[i]
+
     osc.connect(oscGain)
-    oscGain.connect(shimmerFilter)
+    oscGain.connect(panner)
+    panner.connect(shimmerFilter)
     shimmerOscs.push(osc)
+    shimmerPanners.push(panner)
   })
 
   shimmerFilter.connect(shimmerGain)
@@ -397,6 +446,12 @@ function createEngine(ctx: AudioContext): AudioEngine {
   drumFilter.frequency.value = 800 // Keep drums warm
   drumFilter.Q.value = 0.5
 
+  // Drum panners: kick always center, perc alternates
+  const drumKickPanner = ctx.createStereoPanner()
+  drumKickPanner.pan.value = 0
+  const drumPercPanner = ctx.createStereoPanner()
+  drumPercPanner.pan.value = 0.15
+
   drumGain.connect(drumFilter)
   drumFilter.connect(dryGain)
   drumFilter.connect(convolver) // Some reverb on drums
@@ -410,17 +465,23 @@ function createEngine(ctx: AudioContext): AudioEngine {
     padOscs,
     padGain,
     padFilter,
+    padPanners,
     subOsc,
     subGain,
     windNoise,
     windFilter,
     windGain,
+    windPanner,
+    windLfo,
+    windLfoGain,
     droneOscs,
     droneGain,
     droneFilter,
+    dronePanners,
     shimmerOscs,
     shimmerGain,
     shimmerFilter,
+    shimmerPanners,
     convolver,
     reverbGain,
     dryGain,
@@ -428,7 +489,10 @@ function createEngine(ctx: AudioContext): AudioEngine {
     reverb2Gain,
     drumGain,
     drumFilter,
+    drumKickPanner,
+    drumPercPanner,
     noiseBuffer,
+    drumPercSide: 1,
   }
 }
 
@@ -439,6 +503,7 @@ function startEngine(e: AudioEngine) {
   startDrumLoop(e)
   e.subOsc.start()
   e.windNoise.start()
+  e.windLfo.start()
   e.droneOscs.forEach(osc => osc.start())
   e.shimmerOscs.forEach(osc => osc.start())
 
@@ -611,6 +676,29 @@ function updateSoundscape(e: AudioEngine, progress: number) {
     osc.frequency.linearRampToValueAtTime(baseFreqs[i] * shimmerMod, now + 0.1)
   })
 
+  // === STEREO PAN MODULATION ===
+  // Pad: gentle breathing modulation (±0.05 at 0.1Hz)
+  const padPanPositions = [-0.3, -0.1, 0.1, 0.3]
+  e.padPanners.forEach((panner, i) => {
+    const breathe = Math.sin(now * 0.1 + i * 1.5) * 0.05
+    panner.pan.linearRampToValueAtTime(padPanPositions[i] + breathe, now + ramp)
+  })
+
+  // Drone: slow wide sweep modulation (±0.1 at 0.05Hz)
+  const dronePanPositions = [-0.4, 0, 0.4]
+  e.dronePanners.forEach((panner, i) => {
+    const sweep = Math.sin(now * 0.05 + i * 2.1) * 0.1
+    panner.pan.linearRampToValueAtTime(dronePanPositions[i] + sweep, now + ramp)
+  })
+
+  // Shimmer: faster sparkle movement (0.4Hz + progress-dependent)
+  const shimmerPanPositions = [-0.6, -0.2, 0.2, 0.6]
+  const shimmerPanSpeed = 0.4 + progress * 0.3
+  e.shimmerPanners.forEach((panner, i) => {
+    const sparkle = Math.sin(now * shimmerPanSpeed + i * 1.8) * 0.15
+    panner.pan.linearRampToValueAtTime(shimmerPanPositions[i] + sparkle, now + 0.1)
+  })
+
   // === DRUMS/PERCUSSION ===
   // Light rhythmic heartbeat that evolves with the journey
   let drumVol = 0
@@ -690,11 +778,10 @@ function updateSoundscape(e: AudioEngine, progress: number) {
   e.dryGain.gain.linearRampToValueAtTime(0.6 - progress * 0.2, now + ramp)
 
   // === FINAL FADE ===
-  // Fade out smoothly before end screen appears (end screen shows at 99%)
-  if (progress > 0.92) {
-    const fadeProgress = (progress - 0.92) / 0.07 // Fade from 92% to 99%
-    const fadeMultiplier = Math.pow(Math.max(0, 1 - fadeProgress), 2) // Exponential fade for smoothness
-    // Fade master gain toward zero (0.01 to avoid audio artifacts)
+  // Fade out in the last few seconds (end screen shows at 99%)
+  if (progress > 0.97) {
+    const fadeProgress = (progress - 0.97) / 0.03 // Fade from 97% to 100%
+    const fadeMultiplier = Math.pow(Math.max(0, 1 - fadeProgress), 2)
     const targetGain = Math.max(0.001, fadeMultiplier)
     e.masterGain.gain.setTargetAtTime(targetGain, now, 0.3)
   }
