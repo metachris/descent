@@ -66,7 +66,7 @@ export default function Narrative() {
     : (isHotPhase ? 'text-stone-900' : 'text-white')
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-8">
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-8" style={{ zIndex: 10 }}>
       <p
         className={`text-center max-w-4xl leading-relaxed ${styleClasses[currentNarrative.style]} ${textColorClass}`}
         style={{

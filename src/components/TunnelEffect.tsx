@@ -1,31 +1,49 @@
 import { useEffect, useRef, useMemo } from 'react'
 import { useJourney } from '../hooks/useJourney'
-import { getPhaseAtTime } from '../data/content'
+import { PHASES, getPhaseAtTime } from '../data/content'
 
 // Phase-specific tunnel configurations
-const PHASE_TUNNEL: Record<string, {
-  ringColor: string
-  lineColor: string
-  intensity: number  // 0-1 overall effect strength
-  speed: number      // ring expansion speed multiplier
-  lineCount: number  // number of radial speed lines
-}> = {
-  'The Edge':       { ringColor: '100,150,200', lineColor: '80,130,180',  intensity: 0.2, speed: 0.15, lineCount: 0 },
-  'The Plunge':     { ringColor: '100,120,160', lineColor: '120,140,180', intensity: 0.5, speed: 0.6,  lineCount: 12 },
-  'Heat Death':     { ringColor: '180,80,40',   lineColor: '200,100,50',  intensity: 0.6, speed: 0.9,  lineCount: 16 },
-  'Boiling':        { ringColor: '220,100,30',  lineColor: '255,120,40',  intensity: 0.7, speed: 1.2,  lineCount: 20 },
-  'Crushing':       { ringColor: '100,90,80',   lineColor: '80,70,60',    intensity: 0.4, speed: 0.5,  lineCount: 8 },
-  'Incineration':   { ringColor: '240,130,40',  lineColor: '255,150,50',  intensity: 0.8, speed: 1.4,  lineCount: 22 },
-  'The Long Fall':  { ringColor: '60,55,50',    lineColor: '70,65,58',    intensity: 0.25, speed: 0.25, lineCount: 4 },
-  'Outer Core':     { ringColor: '230,120,30',  lineColor: '250,150,50',  intensity: 0.6, speed: 0.9,  lineCount: 14 },
-  'Inner Core':     { ringColor: '250,200,60',  lineColor: '255,220,80',  intensity: 0.4, speed: 0.45, lineCount: 6 },
-  'The Center':     { ringColor: '255,240,180', lineColor: '255,245,200', intensity: 0.2, speed: 0.12, lineCount: 2 },
-  'The Yo-Yo':      { ringColor: '255,240,180', lineColor: '255,245,200', intensity: 0.12, speed: 0.08, lineCount: 0 },
+interface TunnelConfig {
+  ringColor: [number, number, number]
+  lineColor: [number, number, number]
+  intensity: number
+  speed: number
+  lineCount: number
+}
+
+const PHASE_TUNNEL: Record<string, TunnelConfig> = {
+  'The Edge':       { ringColor: [100,150,200], lineColor: [80,130,180],  intensity: 0.2, speed: 0.15, lineCount: 0 },
+  'The Plunge':     { ringColor: [100,120,160], lineColor: [120,140,180], intensity: 0.5, speed: 0.6,  lineCount: 12 },
+  'Heat Death':     { ringColor: [180,80,40],   lineColor: [200,100,50],  intensity: 0.6, speed: 0.9,  lineCount: 16 },
+  'Boiling':        { ringColor: [220,100,30],  lineColor: [255,120,40],  intensity: 0.7, speed: 1.2,  lineCount: 20 },
+  'Crushing':       { ringColor: [100,90,80],   lineColor: [80,70,60],    intensity: 0.4, speed: 0.5,  lineCount: 8 },
+  'Incineration':   { ringColor: [240,130,40],  lineColor: [255,150,50],  intensity: 0.8, speed: 1.4,  lineCount: 22 },
+  'The Long Fall':  { ringColor: [60,55,50],    lineColor: [70,65,58],    intensity: 0.25, speed: 0.25, lineCount: 4 },
+  'Outer Core':     { ringColor: [230,120,30],  lineColor: [250,150,50],  intensity: 0.6, speed: 0.9,  lineCount: 14 },
+  'Inner Core':     { ringColor: [250,200,60],  lineColor: [255,220,80],  intensity: 0.4, speed: 0.45, lineCount: 6 },
+  'The Center':     { ringColor: [255,240,180], lineColor: [255,245,200], intensity: 0.2, speed: 0.12, lineCount: 2 },
+  'The Yo-Yo':      { ringColor: [255,240,180], lineColor: [255,245,200], intensity: 0.12, speed: 0.08, lineCount: 0 },
+}
+
+function lerpColor(a: [number,number,number], b: [number,number,number], t: number): [number,number,number] {
+  return [
+    a[0] + (b[0] - a[0]) * t,
+    a[1] + (b[1] - a[1]) * t,
+    a[2] + (b[2] - a[2]) * t,
+  ]
+}
+
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t
+}
+
+function colorStr(c: [number,number,number]): string {
+  return `${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])}`
 }
 
 // Plunge transition timing (seconds)
-const PLUNGE_START = 10   // "You step forward"
-const PLUNGE_EXPAND = 5   // seconds for the maw to fully open
+const PLUNGE_START = 10
+const PLUNGE_EXPAND = 5
 
 export default function TunnelEffect() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -37,22 +55,53 @@ export default function TunnelEffect() {
   const currentPhase = useMemo(() => getPhaseAtTime(currentTime), [currentTime])
   const phaseName = currentPhase?.name || 'The Edge'
 
+  // Compute blended config: interpolate between current and next phase
+  const blended = useMemo(() => {
+    const config = PHASE_TUNNEL[phaseName] || PHASE_TUNNEL['The Edge']
+    if (!currentPhase) return config
+
+    const phaseProgress = (currentTime - currentPhase.startTime) / (currentPhase.endTime - currentPhase.startTime)
+    const phaseIndex = PHASES.findIndex(p => p.name === phaseName)
+    const nextPhaseName = PHASES[phaseIndex + 1]?.name
+    const nextConfig = nextPhaseName ? PHASE_TUNNEL[nextPhaseName] : null
+
+    // Blend in the last 30% of each phase
+    const blendStart = 0.7
+    if (!nextConfig || phaseProgress < blendStart) return config
+
+    const t = (phaseProgress - blendStart) / (1 - blendStart)
+    return {
+      ringColor: lerpColor(config.ringColor, nextConfig.ringColor, t),
+      lineColor: lerpColor(config.lineColor, nextConfig.lineColor, t),
+      intensity: lerp(config.intensity, nextConfig.intensity, t),
+      speed: lerp(config.speed, nextConfig.speed, t),
+      lineCount: Math.round(lerp(config.lineCount, nextConfig.lineCount, t)),
+    }
+  }, [currentTime, phaseName, currentPhase])
+
+  // Store blended values in refs so the animation loop reads them without restarting
+  const configRef = useRef(blended)
+  configRef.current = blended
+
   // Fade out near journey end
   const fadeOutStart = 0.93
   const fadeOutEnd = 0.98
-
   let globalOpacity = 1
   if (progress > fadeOutStart) {
     globalOpacity = Math.max(0, 1 - (progress - fadeOutStart) / (fadeOutEnd - fadeOutStart))
   }
+  const globalOpacityRef = useRef(globalOpacity)
+  globalOpacityRef.current = globalOpacity
 
-  // Plunge transition: 0 = standing at edge, 1 = fully inside tunnel
+  // Plunge transition
   const plungeT = Math.max(0, Math.min(1, (currentTime - PLUNGE_START) / PLUNGE_EXPAND))
-  // Ease-in-out for smooth acceleration
   const plungeEased = plungeT < 0.5
     ? 2 * plungeT * plungeT
     : 1 - Math.pow(-2 * plungeT + 2, 2) / 2
+  const plungeRef = useRef(plungeEased)
+  plungeRef.current = plungeEased
 
+  // Single stable animation loop — never restarts on phase change
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -74,12 +123,14 @@ export default function TunnelEffect() {
       lastTimestamp = timestamp
       timeRef.current += delta
 
-      const config = PHASE_TUNNEL[phaseName] || PHASE_TUNNEL['The Edge']
+      const config = configRef.current
+      const opacity = globalOpacityRef.current
+      const plunge = plungeRef.current
       const t = timeRef.current
 
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      if (globalOpacity <= 0) {
+      if (opacity <= 0) {
         animationRef.current = requestAnimationFrame(animate)
         return
       }
@@ -88,36 +139,34 @@ export default function TunnelEffect() {
       const cy = canvas.height / 2
       const maxRadius = Math.sqrt(cx * cx + cy * cy)
 
-      // === TUNNEL MAW (center void) ===
-      // Before the plunge: small dark circle at center suggesting the hole
-      // During plunge: expands rapidly to fill the screen (you're falling in)
-      if (plungeEased < 1) {
-        // Maw radius: starts small, expands to fill screen
-        const mawRestRadius = 30 // small dark circle during The Edge
-        const mawRadius = mawRestRadius + plungeEased * (maxRadius - mawRestRadius)
+      // === TUNNEL MAW (center void) — only during plunge ===
+      if (plunge > 0 && plunge < 1) {
+        const mawRadius = plunge * maxRadius
 
-        // Dark void center with a subtle colored rim
-        const rimWidth = 8 + plungeEased * 20
-
-        // Rim glow - gets brighter as it expands
+        // Rim glow
+        const rimWidth = 8 + plunge * 20
         const rimGrad = ctx.createRadialGradient(cx, cy, Math.max(0, mawRadius - rimWidth), cx, cy, mawRadius + 4)
-        const rimOpacity = (0.15 + plungeEased * 0.4) * globalOpacity
+        const rimOpacity = (0.15 + plunge * 0.4) * opacity
         rimGrad.addColorStop(0, 'transparent')
-        rimGrad.addColorStop(0.5, `rgba(${config.ringColor}, ${rimOpacity})`)
+        rimGrad.addColorStop(0.5, `rgba(${colorStr(config.ringColor)}, ${rimOpacity})`)
         rimGrad.addColorStop(1, 'transparent')
-
         ctx.beginPath()
         ctx.arc(cx, cy, mawRadius + 4, 0, Math.PI * 2)
         ctx.fillStyle = rimGrad
         ctx.fill()
 
-        // Interior fill — deep indigo/violet void
-        const voidOpacity = (0.7 - plungeEased * 0.7) * globalOpacity
+        // Interior fill — dark blue at rest, shifts to black during plunge
+        const voidOpacity = (plunge < 0.8 ? 1.0 : 1.0 - (plunge - 0.8) / 0.2) * opacity
         if (voidOpacity > 0.01) {
+          const r = Math.round(10 * (1 - plunge))
+          const g = Math.round(15 * (1 - plunge))
+          const b = Math.round(40 * (1 - plunge))
+          const col = `rgba(${r}, ${g}, ${b}, ${voidOpacity})`
+
+          const edgeSoftness = mawRadius * 0.08
           const voidGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, mawRadius)
-          voidGrad.addColorStop(0, `rgba(20, 10, 50, ${voidOpacity})`)
-          voidGrad.addColorStop(0.4, `rgba(15, 15, 45, ${voidOpacity * 0.8})`)
-          voidGrad.addColorStop(0.7, `rgba(10, 10, 30, ${voidOpacity * 0.4})`)
+          voidGrad.addColorStop(0, col)
+          voidGrad.addColorStop(Math.max(0, 1 - edgeSoftness / mawRadius), col)
           voidGrad.addColorStop(1, 'transparent')
           ctx.beginPath()
           ctx.arc(cx, cy, mawRadius, 0, Math.PI * 2)
@@ -127,35 +176,32 @@ export default function TunnelEffect() {
       }
 
       // === CONCENTRIC RINGS ===
-      // Speed ramps up smoothly with plunge transition
-      const speedMult = config.speed * (0.3 + plungeEased * 0.7)
-      const intensityMult = config.intensity * (0.4 + plungeEased * 0.6)
+      const speedMult = config.speed * (0.3 + plunge * 0.7)
+      const intensityMult = config.intensity * (0.4 + plunge * 0.6)
       const ringCount = 35
       const ringSpacing = maxRadius / ringCount
+      const rc = colorStr(config.ringColor)
 
       for (let i = 0; i < ringCount; i++) {
-        // Rings expand outward over time — slow, breathing pace
         const phase = ((t * speedMult * 12 + i * ringSpacing) % maxRadius)
         const radius = phase
-
-        // Fade ring based on distance from center (inner = brighter)
         const distFactor = 1 - radius / maxRadius
-        const ringOpacity = distFactor * distFactor * intensityMult * globalOpacity * 0.3
+        const ringOpacity = distFactor * distFactor * intensityMult * opacity * 0.3
 
         if (ringOpacity < 0.005) continue
 
         ctx.beginPath()
         ctx.arc(cx, cy, radius, 0, Math.PI * 2)
-        ctx.strokeStyle = `rgba(${config.ringColor}, ${ringOpacity})`
+        ctx.strokeStyle = `rgba(${rc}, ${ringOpacity})`
         ctx.lineWidth = 1 + distFactor * 2
         ctx.stroke()
       }
 
       // === RADIAL SPEED LINES ===
-      // Only appear once we're falling (plunge started)
-      if (config.lineCount > 0 && plungeEased > 0.3) {
-        const lineFade = Math.min(1, (plungeEased - 0.3) / 0.4)
+      if (config.lineCount > 0 && plunge > 0.3) {
+        const lineFade = Math.min(1, (plunge - 0.3) / 0.4)
         const lineLength = 30 + config.speed * 40
+        const lc = colorStr(config.lineColor)
 
         for (let i = 0; i < config.lineCount; i++) {
           const angle = (i / config.lineCount) * Math.PI * 2 + t * 0.1
@@ -167,12 +213,12 @@ export default function TunnelEffect() {
           const x2 = cx + Math.cos(angle) * endDist
           const y2 = cy + Math.sin(angle) * endDist
 
-          const lineOpacity = intensityMult * lineFade * globalOpacity * 0.2 * (0.5 + Math.sin(t * 3 + i * 0.7) * 0.5)
+          const lineOpacity = intensityMult * lineFade * opacity * 0.2 * (0.5 + Math.sin(t * 3 + i * 0.7) * 0.5)
 
           ctx.beginPath()
           ctx.moveTo(x1, y1)
           ctx.lineTo(x2, y2)
-          ctx.strokeStyle = `rgba(${config.lineColor}, ${lineOpacity})`
+          ctx.strokeStyle = `rgba(${lc}, ${lineOpacity})`
           ctx.lineWidth = 1
           ctx.stroke()
         }
@@ -187,7 +233,7 @@ export default function TunnelEffect() {
       window.removeEventListener('resize', resize)
       cancelAnimationFrame(animationRef.current)
     }
-  }, [phaseName, globalOpacity, plungeEased])
+  }, []) // Stable — never restarts
 
   if (globalOpacity <= 0) return null
 
@@ -195,7 +241,7 @@ export default function TunnelEffect() {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 pointer-events-none"
-      style={{ zIndex: 2, mixBlendMode: 'screen' }}
+      style={{ zIndex: 2 }}
     />
   )
 }
