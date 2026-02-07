@@ -53,10 +53,10 @@ export default function Narrative() {
   }
 
   const styleClasses: Record<NarrativeStyle, string> = {
-    normal: 'text-4xl md:text-5xl lg:text-6xl',
-    dramatic: 'text-5xl md:text-6xl lg:text-7xl font-semibold',
-    whisper: 'text-3xl md:text-4xl lg:text-5xl italic',
-    data: 'text-4xl md:text-5xl lg:text-6xl font-mono tracking-wider',
+    normal: 'text-4xl md:text-5xl lg:text-6xl xl:text-7xl',
+    dramatic: 'text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-semibold',
+    whisper: 'text-3xl md:text-4xl lg:text-5xl xl:text-6xl italic',
+    data: 'text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-mono tracking-wider',
   }
 
   // Use darker text on bright backgrounds (Inner Core, Center)
