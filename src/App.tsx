@@ -7,6 +7,7 @@ import VerticalMinimap from './components/VerticalMinimap'
 import IntroScreen from './components/IntroScreen'
 import EndScreen from './components/EndScreen'
 import { JourneyProvider, useJourney } from './hooks/useJourney'
+import { warmUpAudioContext } from './hooks/useAudio'
 
 function AppContent() {
   const [hasStarted, setHasStarted] = useState(false)
@@ -28,6 +29,7 @@ function AppContent() {
         case 'Space':
           e.preventDefault()
           if (!hasStarted) {
+            warmUpAudioContext()
             setHasStarted(true)
             seek(0)
             setTimeout(() => play(), 100)
@@ -121,7 +123,7 @@ function AppContent() {
       )}
 
       {/* Intro Screen */}
-      {!hasStarted && <IntroScreen onStart={handleStart} />}
+      {!hasStarted && <IntroScreen onStart={handleStart} onInteract={warmUpAudioContext} />}
 
       {/* End Screen */}
       <EndScreen isVisible={showEnd} onRestart={handleRestart} />

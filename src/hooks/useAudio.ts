@@ -794,6 +794,27 @@ function getSavedVolume(): number {
   return saved ? parseFloat(saved) : 0.8
 }
 
+// Call this synchronously inside a user gesture (click/tap) to unlock audio on mobile.
+// Creates and resumes the AudioContext before any async delays.
+export function warmUpAudioContext() {
+  if (engine && engine.ctx.state !== 'closed') {
+    if (engine.ctx.state === 'suspended') {
+      engine.ctx.resume()
+    }
+    return
+  }
+
+  try {
+    const ctx = new AudioContext()
+    if (ctx.state === 'suspended') {
+      ctx.resume()
+    }
+    engine = createEngine(ctx)
+  } catch (e) {
+    console.warn('Web Audio API not supported')
+  }
+}
+
 export function useAudio(progress: number, _duration: number, isPlaying: boolean) {
   const [isInitialized, setIsInitialized] = useState(false)
   const [volume, setVolumeState] = useState(getSavedVolume)
@@ -804,12 +825,20 @@ export function useAudio(progress: number, _duration: number, isPlaying: boolean
   const initAudio = useCallback(() => {
     if (engine && engine.ctx.state !== 'closed') {
       engineRef.current = engine
+      // Resume in case it was suspended (mobile browsers)
+      if (engine.ctx.state === 'suspended') {
+        engine.ctx.resume()
+      }
       setIsInitialized(true)
       return
     }
 
     try {
       const ctx = new AudioContext()
+      // Mobile browsers may create the context in suspended state
+      if (ctx.state === 'suspended') {
+        ctx.resume()
+      }
       engine = createEngine(ctx)
       engineRef.current = engine
       setIsInitialized(true)

@@ -3,12 +3,15 @@ import { LanguageSelector } from './LanguageSelector'
 
 interface IntroScreenProps {
   onStart: () => void
+  onInteract?: () => void
 }
 
-export default function IntroScreen({ onStart }: IntroScreenProps) {
+export default function IntroScreen({ onStart, onInteract }: IntroScreenProps) {
   const [isExiting, setIsExiting] = useState(false)
 
   const handleStart = () => {
+    // Fire immediately inside the user gesture — needed for mobile audio unlock
+    onInteract?.()
     setIsExiting(true)
     setTimeout(onStart, 1000)
   }
