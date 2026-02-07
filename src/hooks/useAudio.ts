@@ -836,8 +836,8 @@ export function useAudio(progress: number, _duration: number, isPlaying: boolean
     try {
       const ctx = new AudioContext()
       // Mobile browsers may create the context in suspended state
-      if (ctx.state === 'suspended') {
-        ctx.resume()
+      if (ctx.ctx.state === 'suspended') {
+        ctx.ctx.resume()
       }
       engine = createEngine(ctx)
       engineRef.current = engine
